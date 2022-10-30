@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "fstream": "cpp",
+        "ostream": "cpp",
+        "cstddef": "c",
+        "stdio.h": "c",
+        "istream": "c",
+        "*.tcc": "c",
+        "inet.h": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "algorithm": "c",
+        "string": "cpp",
+        "iosfwd": "cpp"
+    }
+}

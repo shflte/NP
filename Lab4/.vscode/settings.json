@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "complex": "c",
+        "socket.h": "c",
+        "in.h": "c",
+        "signal.h": "c"
+    }
+}
