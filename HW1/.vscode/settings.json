@@ -4,6 +4,7 @@
         "socket.h": "c",
         "in.h": "c",
         "signal.h": "c",
-        "random": "c"
+        "random": "c",
+        "stdlib.h": "c"
     }
 }

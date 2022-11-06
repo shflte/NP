@@ -12,28 +12,71 @@
 #include <sys/time.h>
 #include <sys/signal.h>
 
-struct client{
-	int			fd;
-	char 		name[50];
-	char		ip_port[30];
-};
-
 void handle(int signal) {
 	// printf("broken pipe;(\n");
 	return;
 }
 
-void gettime(char* str) {
-	time_t rawtime;
-	struct tm* timeinfo;
+void sigint(int signal, int fd) {
+	close(4);
+	printf("close\n");
+	return;
+}
 
-	time (&rawtime);
-	timeinfo = localtime(&rawtime);
+struct client{
+	int			fd;
+	char 		name[50];
+	char		ip_port[30];
+	int			state; // 0 for lobby, others for channel
+};
 
-	char strtemp[21];
-	sprintf(strtemp, "%d-%d-%d %d:%d:%d ", 
-			timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-	strcpy(str, strtemp);
+struct channel{
+	int			id;
+	char		name[50];
+	char		topic[50];
+
+};
+
+void response(int fd, char *code, char* name, char* param) {
+	char buf[500];
+	bzero(buf, sizeof(buf));
+	if (param == NULL && name == NULL) { // name == NULL means this is not known for an associated connection
+		sprintf(buf, ":hehe %s", code);
+	}
+	else if (name == NULL) {
+		sprintf(buf, ":hehe %s %s", code, param);
+	}
+	else if (param == NULL) {
+		sprintf(buf, ":hehe %s %s", code, name);
+	}
+	else {
+		sprintf(buf, ":hehe %s %s %s", code, name, param);
+	}
+	write(fd, buf, sizeof(buf));
+	printf("%s\n", buf);
+}
+
+// void motd(int fd, struct client *cli) {
+// 	char buf[500];
+// 	bzero(buf, sizeof(buf));
+// 	response(fd, "001", cli->name, ":Welcome to hehe!");
+// 	// response(fd, "251", cli->name, ":There are 7 users and 0 invisible on 1 server");
+// 	response(fd, "375", cli->name, ":- MOTD -");
+// 	response(fd, "372", cli->name, ":- /   Why         so          ? \\ ");
+// 	response(fd, "372", cli->name, ":- \\        you        weak      / ");
+// 	response(fd, "372", cli->name, ":- --------------------------------");
+// 	response(fd, "372", cli->name, ":-       \\   ,__,          ");
+// 	response(fd, "372", cli->name, ":-        \\  (oo)____      ");	
+// 	response(fd, "372", cli->name, ":-           (__)    )\\    ");
+// 	response(fd, "372", cli->name, ":-              ||--|| * ");
+// 	response(fd, "376", cli->name, ":End of MOTD");
+// }
+
+void motd(int fd, struct client *cli) {
+	write(fd, ":mircd 001 shflte :Welcome to the minimized IRC daemon!\n", 200);
+	write(fd, ":mircd 375 shflte :- mircd Message of the day -", 200);
+	write(fd, ":mircd 372 shflte :-  Hello, World!", 200);
+	write(fd, ":mircd 376 shflte :End of message of the day", 200);
 }
 
 int main(int argc, char **argv) {
@@ -65,6 +108,7 @@ int main(int argc, char **argv) {
 
 	// handle broken pipe
 	signal(SIGPIPE, handle);
+	signal(SIGINT, sigint);
 
 	FD_ZERO(&allset);
 	FD_SET(listenfd, &allset);
@@ -111,28 +155,28 @@ int main(int argc, char **argv) {
 							// attain client ip & port
 							sprintf(clilist[i].ip_port, "%s:%d", inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
 
-							// new name
-							sprintf(clilist[i].name, "haha_%d", newfd);
-
-							bzero(buf, sizeof(buf));
-							gettime(time);
-							// welcome
-							sprintf(buf, "%-19s*** Welcome to the simple CHAT server\n%s *** Total %d users online now. Your name is <%s>\n", time, time, numcli, clilist[i].name);
-							write(newfd, buf, strlen(buf));
-
-							// announce other user
-							sprintf(buf, "%-19s*** User <%s> has just landed on the server\n", time, clilist[i].name);
-							for (int j = 0; j < climax + 1; j++) {
-								if ((clilist[j].fd) < 0 || i == j) {
-									continue;
-								}
-								else {
-									write(clilist[j].fd, buf, strlen(buf));
-								}
-							}
-
 							// server log
 							printf("* client connected from %s\n", clilist[i].ip_port);
+
+							// CAP LS XXX (not used)
+							bzero(buf, sizeof(buf));
+							read(newfd, buf, 100); 
+							// NICK <nickname>
+							bzero(buf, sizeof(buf));
+							read(newfd, buf, 100); 
+							char* p = strtok(buf, " ");
+							p = strtok(NULL, " ");
+							p[strlen(p) - 1] = '\0';
+							strcpy(clilist[i].name, p);
+							// USER <username> <hostname> <servername> <realname> (not used)
+							bzero(buf, sizeof(buf));
+							read(newfd, buf, 100); 
+
+							// motd
+							motd(newfd, &clilist[i]);
+
+							printf("name: %s\n", clilist[i].name);
+
 							break;
 						}
 					}
@@ -149,19 +193,6 @@ int main(int argc, char **argv) {
 						printf("%s\n", strerror(errno));
 					}
 					else if (byte_read == 0) {
-						bzero(buf, sizeof(buf));
-						gettime(time);
-						// announce other user
-						sprintf(buf, "%-19s*** User <%s> has left the server\n", time, clilist[i].name);
-						for (int j = 0; j < climax + 1; j++) {
-							if ((clilist[j].fd) < 0 || i == j) {
-								continue;
-							}
-							else {
-								write(clilist[j].fd, buf, strlen(buf));
-							}
-						}
-
 						// server log
 						printf("* client %s disconnected\n", clilist[i].ip_port);
 
@@ -180,6 +211,7 @@ int main(int argc, char **argv) {
 						if (byte_read - 1 == 0) {
 							continue;
 						}
+						/*
 						if (strcmp(parsed, "/name") == 0) {
 							parsed = strtok(NULL, del);
 							if (!parsed) {
@@ -251,6 +283,7 @@ int main(int argc, char **argv) {
 								}
 							}
 						}
+						*/
 					}
 				}
 			}
