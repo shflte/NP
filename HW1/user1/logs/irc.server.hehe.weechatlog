@@ -1,0 +1,425 @@
+2022-11-08 18:47:38	--	irc: connecting to server localhost/5678...
+2022-11-08 18:47:38	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 18:47:38	--	Welcome to hehe!
+2022-11-08 18:47:38	--	- MOTD -
+2022-11-08 18:47:38	--	 /   Why         so          ? \
+2022-11-08 18:47:38	--	 \        you        weak      /
+2022-11-08 18:47:38	--	 --------------------------------
+2022-11-08 18:47:38	--	        \   ,__,
+2022-11-08 18:47:38	--	         \  (oo)____
+2022-11-08 18:47:38	--	            (__)    )\
+2022-11-08 18:47:38	--	               ||--|| *
+2022-11-08 18:47:38	--	- End of MOTD -
+2022-11-08 18:50:29	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 18:50:29	--	irc: disconnecting from server...
+2022-11-08 18:50:29	--	irc: disconnected from server
+2022-11-08 18:50:29	--	irc: reconnecting to server in 10 seconds
+2022-11-08 18:50:39	--	irc: reconnecting to server...
+2022-11-08 18:50:39	--	irc: connecting to server localhost/5678...
+2022-11-08 18:50:39	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 18:50:39	--	Welcome to hehe!
+2022-11-08 18:50:39	--	- MOTD -
+2022-11-08 18:50:39	--	 /   Why         so          ? \
+2022-11-08 18:50:39	--	 \        you        weak      /
+2022-11-08 18:50:39	--	 --------------------------------
+2022-11-08 18:50:39	--	        \   ,__,
+2022-11-08 18:50:39	--	         \  (oo)____
+2022-11-08 18:50:39	--	            (__)    )\
+2022-11-08 18:50:39	--	               ||--|| *
+2022-11-08 18:50:39	--	- End of MOTD -
+2022-11-08 18:51:17	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 18:51:17	--	irc: disconnecting from server...
+2022-11-08 18:51:17	--	irc: disconnected from server
+2022-11-08 18:51:17	--	irc: reconnecting to server in 10 seconds
+2022-11-08 18:51:27	--	irc: reconnecting to server...
+2022-11-08 18:51:27	--	irc: connecting to server localhost/5678...
+2022-11-08 18:51:27	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 18:51:27	--	Welcome to hehe!
+2022-11-08 18:51:27	--	- MOTD -
+2022-11-08 18:51:27	--	 /   Why         so          ? \
+2022-11-08 18:51:27	--	 \        you        weak      /
+2022-11-08 18:51:27	--	 --------------------------------
+2022-11-08 18:51:27	--	        \   ,__,
+2022-11-08 18:51:27	--	         \  (oo)____
+2022-11-08 18:51:27	--	            (__)    )\
+2022-11-08 18:51:27	--	               ||--|| *
+2022-11-08 18:51:27	--	- End of MOTD -
+2022-11-08 18:52:11	--	- Channel list -
+2022-11-08 18:52:11	--	- End of channel list -
+2022-11-08 18:52:20	--	No topic set for channel #hahachannel
+2022-11-08 18:52:20	=!=	irc: "topic" command received without channel
+2022-11-08 18:52:20	=!=	irc: too few parameters received in command "353" (received: 2, expected: at least 3)
+2022-11-08 18:52:20	=!=	irc: failed to parse command "353" (please report to developers): ":hehe 353 shsh2 #hahachannel"
+2022-11-08 18:52:20	=!=	irc: too few parameters received in command "366" (received: 2, expected: at least 3)
+2022-11-08 18:52:20	=!=	irc: failed to parse command "366" (please report to developers): ":hehe 366 shsh2 #hahachannel"
+2022-11-08 18:52:20	=!=	irc: command "of" not found: ":End of Names List"
+2022-11-08 18:53:30	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 18:53:30	--	irc: disconnecting from server...
+2022-11-08 18:53:30	--	irc: disconnected from server
+2022-11-08 18:53:30	--	irc: reconnecting to server in 10 seconds
+2022-11-08 18:53:36	--	irc: connecting to server localhost/5678...
+2022-11-08 18:53:36	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 18:53:36	--	Welcome to hehe!
+2022-11-08 18:53:36	--	- MOTD -
+2022-11-08 18:53:36	--	 /   Why         so          ? \
+2022-11-08 18:53:36	--	 \        you        weak      /
+2022-11-08 18:53:36	--	 --------------------------------
+2022-11-08 18:53:36	--	        \   ,__,
+2022-11-08 18:53:36	--	         \  (oo)____
+2022-11-08 18:53:36	--	            (__)    )\
+2022-11-08 18:53:36	--	               ||--|| *
+2022-11-08 18:53:36	--	- End of MOTD -
+2022-11-08 18:54:37	--	- Channel list -
+2022-11-08 18:54:37	--	- End of channel list -
+2022-11-08 18:56:43	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 18:56:43	--	irc: disconnecting from server...
+2022-11-08 18:56:43	--	irc: disconnected from server
+2022-11-08 18:56:43	--	irc: reconnecting to server in 10 seconds
+2022-11-08 18:56:49	--	irc: connecting to server localhost/5678...
+2022-11-08 18:56:49	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 18:56:49	--	Welcome to hehe!
+2022-11-08 18:56:49	--	- MOTD -
+2022-11-08 18:56:49	--	 /   Why         so          ? \
+2022-11-08 18:56:49	--	 \        you        weak      /
+2022-11-08 18:56:49	--	 --------------------------------
+2022-11-08 18:56:49	--	        \   ,__,
+2022-11-08 18:56:49	--	         \  (oo)____
+2022-11-08 18:56:49	--	            (__)    )\
+2022-11-08 18:56:49	--	               ||--|| *
+2022-11-08 18:56:49	--	- End of MOTD -
+2022-11-08 18:57:12	=!=	irc: command "privmsg" received without nick
+2022-11-08 18:57:12	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #hoho :list"
+2022-11-08 18:57:14	=!=	irc: command "privmsg" received without nick
+2022-11-08 18:57:14	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #hoho :hi"
+2022-11-08 18:58:55	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 18:58:55	--	irc: disconnecting from server...
+2022-11-08 18:58:55	--	irc: disconnected from server
+2022-11-08 18:58:55	--	irc: reconnecting to server in 10 seconds
+2022-11-08 18:59:05	--	irc: reconnecting to server...
+2022-11-08 18:59:05	--	irc: connecting to server localhost/5678...
+2022-11-08 18:59:05	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 18:59:05	--	Welcome to hehe!
+2022-11-08 18:59:05	--	- MOTD -
+2022-11-08 18:59:05	--	 /   Why         so          ? \
+2022-11-08 18:59:05	--	 \        you        weak      /
+2022-11-08 18:59:05	--	 --------------------------------
+2022-11-08 18:59:05	--	        \   ,__,
+2022-11-08 18:59:05	--	         \  (oo)____
+2022-11-08 18:59:05	--	            (__)    )\
+2022-11-08 18:59:05	--	               ||--|| *
+2022-11-08 18:59:05	--	- End of MOTD -
+2022-11-08 18:59:16	--	- Channel list -
+2022-11-08 18:59:16	--	hoho(0)
+2022-11-08 18:59:16	--	- End of channel list -
+2022-11-08 18:59:22	--	- Channel list -
+2022-11-08 18:59:22	--	hoho(0)
+2022-11-08 18:59:22	--	- End of channel list -
+2022-11-08 18:59:38	--	#hoho shflte shflte
+2022-11-08 19:00:23	=!=	irc: command "privmsg" received without nick
+2022-11-08 19:00:23	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #hahano1 :hi"
+2022-11-08 19:01:38	--	- Channel list -
+2022-11-08 19:01:38	--	hoho(0)
+2022-11-08 19:01:38	--	hahano1(1)
+2022-11-08 19:01:38	--	- End of channel list -
+2022-11-08 19:01:56	--	- Channel list -
+2022-11-08 19:01:56	--	hoho(0)
+2022-11-08 19:01:56	--	hahano1(0)
+2022-11-08 19:01:56	--	- End of channel list -
+2022-11-08 19:02:01	--	No topic set for channel #how
+2022-11-08 19:02:01	--	Nicks #how: [hoho]
+2022-11-08 19:02:01	--	#how: End of Names List
+2022-11-08 19:02:13	=!=	irc: this buffer is not a channel!
+2022-11-08 19:02:16	--	No topic set for channel #how
+2022-11-08 19:02:16	--	Nicks #how: [hoho]
+2022-11-08 19:02:16	--	#how: End of Names List
+2022-11-08 19:05:12	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:05:12	--	irc: disconnecting from server...
+2022-11-08 19:05:12	--	irc: disconnected from server
+2022-11-08 19:05:12	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:05:22	--	irc: reconnecting to server...
+2022-11-08 19:05:22	--	irc: connecting to server localhost/5678...
+2022-11-08 19:05:22	=!=	irc: connection refused
+2022-11-08 19:05:22	--	irc: reconnecting to server in 20 seconds
+2022-11-08 19:05:42	--	irc: reconnecting to server...
+2022-11-08 19:05:42	--	irc: connecting to server localhost/5678...
+2022-11-08 19:05:42	=!=	irc: connection refused
+2022-11-08 19:05:42	--	irc: reconnecting to server in 40 seconds
+2022-11-08 19:06:22	--	irc: reconnecting to server...
+2022-11-08 19:06:22	--	irc: connecting to server localhost/5678...
+2022-11-08 19:06:22	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:06:22	--	Welcome to hehe!
+2022-11-08 19:06:22	--	- MOTD -
+2022-11-08 19:06:22	--	 /   Why         so          ? \
+2022-11-08 19:06:22	--	 \        you        weak      /
+2022-11-08 19:06:22	--	 --------------------------------
+2022-11-08 19:06:22	--	        \   ,__,
+2022-11-08 19:06:22	--	         \  (oo)____
+2022-11-08 19:06:22	--	            (__)    )\
+2022-11-08 19:06:22	--	               ||--|| *
+2022-11-08 19:06:22	--	- End of MOTD -
+2022-11-08 19:11:57	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:11:57	--	irc: disconnecting from server...
+2022-11-08 19:11:57	--	irc: disconnected from server
+2022-11-08 19:11:57	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:12:05	--	irc: connecting to server localhost/5678...
+2022-11-08 19:12:05	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:12:05	--	Welcome to hehe!
+2022-11-08 19:12:05	--	- MOTD -
+2022-11-08 19:12:05	--	 /   Why         so          ? \
+2022-11-08 19:12:05	--	 \        you        weak      /
+2022-11-08 19:12:05	--	 --------------------------------
+2022-11-08 19:12:05	--	        \   ,__,
+2022-11-08 19:12:05	--	         \  (oo)____
+2022-11-08 19:12:05	--	            (__)    )\
+2022-11-08 19:12:05	--	               ||--|| *
+2022-11-08 19:12:05	--	- End of MOTD -
+2022-11-08 19:12:34	--	No topic set for channel #ha!
+2022-11-08 19:12:34	--	Nicks #ha!: [haha hehe]
+2022-11-08 19:12:34	--	#ha!: End of Names List
+2022-11-08 19:13:38	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:13:38	--	irc: disconnecting from server...
+2022-11-08 19:13:38	--	irc: disconnected from server
+2022-11-08 19:13:38	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:13:46	--	irc: connecting to server localhost/5678...
+2022-11-08 19:13:46	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:13:46	--	Welcome to hehe!
+2022-11-08 19:13:46	--	- MOTD -
+2022-11-08 19:13:46	--	 /   Why         so          ? \
+2022-11-08 19:13:46	--	 \        you        weak      /
+2022-11-08 19:13:46	--	 --------------------------------
+2022-11-08 19:13:46	--	        \   ,__,
+2022-11-08 19:13:46	--	         \  (oo)____
+2022-11-08 19:13:46	--	            (__)    )\
+2022-11-08 19:13:46	--	               ||--|| *
+2022-11-08 19:13:46	--	- End of MOTD -
+2022-11-08 19:15:06	--	No topic set for channel #chacha
+2022-11-08 19:15:06	--	Nicks #chacha: [user1]
+2022-11-08 19:15:06	--	#chacha: End of Names List
+2022-11-08 19:17:35	--	irc: connecting to server localhost/5678...
+2022-11-08 19:17:35	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:17:35	--	Welcome to hehe!
+2022-11-08 19:17:35	--	- MOTD -
+2022-11-08 19:17:35	--	 /   Why         so          ? \
+2022-11-08 19:17:35	--	 \        you        weak      /
+2022-11-08 19:17:35	--	 --------------------------------
+2022-11-08 19:17:35	--	        \   ,__,
+2022-11-08 19:17:35	--	         \  (oo)____
+2022-11-08 19:17:35	--	            (__)    )\
+2022-11-08 19:17:35	--	               ||--|| *
+2022-11-08 19:17:35	--	- End of MOTD -
+2022-11-08 19:17:46	=!=	irc: command "privmsg" received without nick
+2022-11-08 19:17:46	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #haha :hi"
+2022-11-08 19:17:56	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:17:56	--	irc: disconnecting from server...
+2022-11-08 19:17:56	--	irc: disconnected from server
+2022-11-08 19:17:56	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:18:06	--	irc: reconnecting to server...
+2022-11-08 19:18:06	--	irc: connecting to server localhost/5678...
+2022-11-08 19:18:06	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:18:06	--	Welcome to hehe!
+2022-11-08 19:18:06	--	- MOTD -
+2022-11-08 19:18:06	--	 /   Why         so          ? \
+2022-11-08 19:18:06	--	 \        you        weak      /
+2022-11-08 19:18:06	--	 --------------------------------
+2022-11-08 19:18:06	--	        \   ,__,
+2022-11-08 19:18:06	--	         \  (oo)____
+2022-11-08 19:18:06	--	            (__)    )\
+2022-11-08 19:18:06	--	               ||--|| *
+2022-11-08 19:18:06	--	- End of MOTD -
+2022-11-08 19:18:12	=!=	irc: command "privmsg" received without nick
+2022-11-08 19:18:12	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #haha :hi"
+2022-11-08 19:21:16	=!=	irc: command "privmsg" received without nick
+2022-11-08 19:21:16	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #cha88 :hi"
+2022-11-08 19:24:43	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:24:43	--	irc: disconnecting from server...
+2022-11-08 19:24:43	--	irc: disconnected from server
+2022-11-08 19:24:43	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:24:49	--	irc: connecting to server localhost/5678...
+2022-11-08 19:24:49	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:24:49	--	Welcome to hehe!
+2022-11-08 19:24:49	--	- MOTD -
+2022-11-08 19:24:49	--	 /   Why         so          ? \
+2022-11-08 19:24:49	--	 \        you        weak      /
+2022-11-08 19:24:49	--	 --------------------------------
+2022-11-08 19:24:49	--	        \   ,__,
+2022-11-08 19:24:49	--	         \  (oo)____
+2022-11-08 19:24:49	--	            (__)    )\
+2022-11-08 19:24:49	--	               ||--|| *
+2022-11-08 19:24:49	--	- End of MOTD -
+2022-11-08 19:43:27	=!=	irc: command "topic" received without nick
+2022-11-08 19:43:27	=!=	irc: failed to parse command "topic" (please report to developers): "TOPIC #hi"
+2022-11-08 19:44:25	--	- Channel list -
+2022-11-08 19:44:25	--	hi(1): test haha paradi
+2022-11-08 19:44:25	--	- End of channel list -
+2022-11-08 19:45:45	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:45:45	--	irc: disconnecting from server...
+2022-11-08 19:45:45	--	irc: disconnected from server
+2022-11-08 19:45:45	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:46:11	--	irc: connecting to server localhost/5678...
+2022-11-08 19:46:11	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:46:11	--	Welcome to hehe!
+2022-11-08 19:46:11	--	- MOTD -
+2022-11-08 19:46:11	--	 /   Why         so          ? \
+2022-11-08 19:46:11	--	 \        you        weak      /
+2022-11-08 19:46:11	--	 --------------------------------
+2022-11-08 19:46:11	--	        \   ,__,
+2022-11-08 19:46:11	--	         \  (oo)____
+2022-11-08 19:46:11	--	            (__)    )\
+2022-11-08 19:46:11	--	               ||--|| *
+2022-11-08 19:46:11	--	- End of MOTD -
+2022-11-08 19:46:32	=!=	irc: command "privmsg" received without nick
+2022-11-08 19:46:32	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #hi :hi"
+2022-11-08 19:50:13	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 19:50:13	--	irc: disconnecting from server...
+2022-11-08 19:50:13	--	irc: disconnected from server
+2022-11-08 19:50:13	--	irc: reconnecting to server in 10 seconds
+2022-11-08 19:50:33	--	irc: connecting to server localhost/5678...
+2022-11-08 19:50:33	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 19:50:33	--	Welcome to hehe!
+2022-11-08 19:50:33	--	- MOTD -
+2022-11-08 19:50:33	--	 /   Why         so          ? \
+2022-11-08 19:50:33	--	 \        you        weak      /
+2022-11-08 19:50:33	--	 --------------------------------
+2022-11-08 19:50:33	--	        \   ,__,
+2022-11-08 19:50:33	--	         \  (oo)____
+2022-11-08 19:50:33	--	            (__)    )\
+2022-11-08 19:50:33	--	               ||--|| *
+2022-11-08 19:50:33	--	- End of MOTD -
+2022-11-08 19:50:45	=!=	irc: command "privmsg" received without nick
+2022-11-08 19:50:45	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #hi :hi"
+2022-11-08 20:04:24	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 20:04:24	--	irc: disconnecting from server...
+2022-11-08 20:04:24	--	irc: disconnected from server
+2022-11-08 20:04:24	--	irc: reconnecting to server in 10 seconds
+2022-11-08 20:04:34	--	irc: reconnecting to server...
+2022-11-08 20:04:34	--	irc: connecting to server localhost/5678...
+2022-11-08 20:04:34	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:04:34	--	Welcome to hehe!
+2022-11-08 20:04:34	--	- MOTD -
+2022-11-08 20:04:34	--	 /   Why         so          ? \
+2022-11-08 20:04:34	--	 \        you        weak      /
+2022-11-08 20:04:34	--	 --------------------------------
+2022-11-08 20:04:34	--	        \   ,__,
+2022-11-08 20:04:34	--	         \  (oo)____
+2022-11-08 20:04:34	--	            (__)    )\
+2022-11-08 20:04:34	--	               ||--|| *
+2022-11-08 20:04:34	--	- End of MOTD -
+2022-11-08 20:04:48	--	irc: connecting to server localhost/5678...
+2022-11-08 20:04:48	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:04:48	--	Welcome to hehe!
+2022-11-08 20:04:48	--	- MOTD -
+2022-11-08 20:04:48	--	 /   Why         so          ? \
+2022-11-08 20:04:48	--	 \        you        weak      /
+2022-11-08 20:04:48	--	 --------------------------------
+2022-11-08 20:04:48	--	        \   ,__,
+2022-11-08 20:04:48	--	         \  (oo)____
+2022-11-08 20:04:48	--	            (__)    )\
+2022-11-08 20:04:48	--	               ||--|| *
+2022-11-08 20:04:48	--	- End of MOTD -
+2022-11-08 20:05:02	=!=	irc: command "privmsg" received without nick
+2022-11-08 20:05:02	=!=	irc: failed to parse command "privmsg" (please report to developers): "PRIVMSG #hoho :hi"
+2022-11-08 20:10:44	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 20:10:44	--	irc: disconnecting from server...
+2022-11-08 20:10:44	--	irc: disconnected from server
+2022-11-08 20:10:44	--	irc: reconnecting to server in 10 seconds
+2022-11-08 20:10:54	--	irc: reconnecting to server...
+2022-11-08 20:10:54	--	irc: connecting to server localhost/5678...
+2022-11-08 20:10:54	=!=	irc: connection refused
+2022-11-08 20:10:54	--	irc: reconnecting to server in 20 seconds
+2022-11-08 20:11:12	--	irc: connecting to server localhost/5678...
+2022-11-08 20:11:12	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:11:12	--	Welcome to hehe!
+2022-11-08 20:11:12	--	- MOTD -
+2022-11-08 20:11:12	--	 /   Why         so          ? \
+2022-11-08 20:11:12	--	 \        you        weak      /
+2022-11-08 20:11:12	--	 --------------------------------
+2022-11-08 20:11:12	--	        \   ,__,
+2022-11-08 20:11:12	--	         \  (oo)____
+2022-11-08 20:11:12	--	            (__)    )\
+2022-11-08 20:11:12	--	               ||--|| *
+2022-11-08 20:11:12	--	- End of MOTD -
+2022-11-08 20:11:46	--	No topic set for channel #hi
+2022-11-08 20:11:46	--	Nicks #hi: [user1]
+2022-11-08 20:11:46	--	#hi: End of Names List
+2022-11-08 20:12:01	--	irc: connecting to server localhost/5678...
+2022-11-08 20:12:01	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:12:01	--	Welcome to hehe!
+2022-11-08 20:12:01	--	- MOTD -
+2022-11-08 20:12:01	--	 /   Why         so          ? \
+2022-11-08 20:12:01	--	 \        you        weak      /
+2022-11-08 20:12:01	--	 --------------------------------
+2022-11-08 20:12:01	--	        \   ,__,
+2022-11-08 20:12:01	--	         \  (oo)____
+2022-11-08 20:12:01	--	            (__)    )\
+2022-11-08 20:12:01	--	               ||--|| *
+2022-11-08 20:12:01	--	- End of MOTD -
+2022-11-08 20:15:03	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 20:15:03	--	irc: disconnecting from server...
+2022-11-08 20:15:03	--	irc: disconnected from server
+2022-11-08 20:15:03	--	irc: reconnecting to server in 10 seconds
+2022-11-08 20:15:13	--	irc: reconnecting to server...
+2022-11-08 20:15:13	--	irc: connecting to server localhost/5678...
+2022-11-08 20:15:13	=!=	irc: connection refused
+2022-11-08 20:15:13	--	irc: reconnecting to server in 20 seconds
+2022-11-08 20:15:34	--	irc: connecting to server localhost/5678...
+2022-11-08 20:15:34	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:15:34	--	Welcome to hehe!
+2022-11-08 20:15:34	--	- MOTD -
+2022-11-08 20:15:34	--	 /   Why         so          ? \
+2022-11-08 20:15:34	--	 \        you        weak      /
+2022-11-08 20:15:34	--	 --------------------------------
+2022-11-08 20:15:34	--	        \   ,__,
+2022-11-08 20:15:34	--	         \  (oo)____
+2022-11-08 20:15:34	--	            (__)    )\
+2022-11-08 20:15:34	--	               ||--|| *
+2022-11-08 20:15:34	--	- End of MOTD -
+2022-11-08 20:17:14	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 20:17:14	--	irc: disconnecting from server...
+2022-11-08 20:17:14	--	irc: disconnected from server
+2022-11-08 20:17:14	--	irc: reconnecting to server in 10 seconds
+2022-11-08 20:17:24	--	irc: reconnecting to server...
+2022-11-08 20:17:24	--	irc: connecting to server localhost/5678...
+2022-11-08 20:17:24	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:17:24	--	Welcome to hehe!
+2022-11-08 20:17:24	--	- MOTD -
+2022-11-08 20:17:24	--	 /   Why         so          ? \
+2022-11-08 20:17:24	--	 \        you        weak      /
+2022-11-08 20:17:24	--	 --------------------------------
+2022-11-08 20:17:24	--	        \   ,__,
+2022-11-08 20:17:24	--	         \  (oo)____
+2022-11-08 20:17:24	--	            (__)    )\
+2022-11-08 20:17:24	--	               ||--|| *
+2022-11-08 20:17:24	--	- End of MOTD -
+2022-11-08 20:19:55	=!=	irc: reading data on socket: error 22 (connection closed by peer)
+2022-11-08 20:19:55	--	irc: disconnecting from server...
+2022-11-08 20:19:55	--	irc: disconnected from server
+2022-11-08 20:19:55	--	irc: reconnecting to server in 10 seconds
+2022-11-08 20:20:05	--	irc: reconnecting to server...
+2022-11-08 20:20:05	--	irc: connecting to server localhost/5678...
+2022-11-08 20:20:05	=!=	irc: connection refused
+2022-11-08 20:20:05	--	irc: reconnecting to server in 20 seconds
+2022-11-08 20:20:25	--	irc: reconnecting to server...
+2022-11-08 20:20:25	--	irc: connecting to server localhost/5678...
+2022-11-08 20:20:25	=!=	irc: connection refused
+2022-11-08 20:20:25	--	irc: reconnecting to server in 40 seconds
+2022-11-08 20:21:05	--	irc: reconnecting to server...
+2022-11-08 20:21:05	--	irc: connecting to server localhost/5678...
+2022-11-08 20:21:05	=!=	irc: connection refused
+2022-11-08 20:21:05	--	irc: reconnecting to server in 1 minute, 20 seconds
+2022-11-08 20:22:25	--	irc: reconnecting to server...
+2022-11-08 20:22:25	--	irc: connecting to server localhost/5678...
+2022-11-08 20:22:25	=!=	irc: connection refused
+2022-11-08 20:22:25	--	irc: reconnecting to server in 2 minutes, 40 seconds
+2022-11-08 20:24:14	--	irc: connecting to server localhost/5678...
+2022-11-08 20:24:14	--	irc: connected to localhost/5678 (127.0.0.1)
+2022-11-08 20:24:14	--	Welcome to hehe!
+2022-11-08 20:24:14	--	- MOTD -
+2022-11-08 20:24:14	--	 /   special thanks to Erza >.< \
+2022-11-08 20:24:14	--	 |   Why         so          ?  |
+2022-11-08 20:24:14	--	 \        you        weak      /
+2022-11-08 20:24:14	--	 --------------------------------
+2022-11-08 20:24:14	--	        \   ,__,
+2022-11-08 20:24:14	--	         \  (oo)____
+2022-11-08 20:24:14	--	            (__)    )\
+2022-11-08 20:24:14	--	               ||--|| *
+2022-11-08 20:24:14	--	- End of MOTD -

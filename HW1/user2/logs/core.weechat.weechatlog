@@ -1,0 +1,29 @@
+2022-11-08 18:47:01		New key binding (context "default"): meta-B => /buflist toggle
+2022-11-08 18:47:01		New key binding (context "default"): meta-OP => /bar scroll buflist * -100%
+2022-11-08 18:47:01		New key binding (context "default"): meta2-11~ => /bar scroll buflist * -100%
+2022-11-08 18:47:01		New key binding (context "default"): meta-OQ => /bar scroll buflist * +100%
+2022-11-08 18:47:01		New key binding (context "default"): meta2-12~ => /bar scroll buflist * +100%
+2022-11-08 18:47:01		New key binding (context "default"): meta2-11^ => /bar scroll buflist * -100%
+2022-11-08 18:47:01		New key binding (context "default"): meta2-1;5P => /bar scroll buflist * -100%
+2022-11-08 18:47:01		New key binding (context "default"): meta2-12^ => /bar scroll buflist * +100%
+2022-11-08 18:47:01		New key binding (context "default"): meta2-1;5Q => /bar scroll buflist * +100%
+2022-11-08 18:47:01		New key binding (context "default"): meta-meta-OP => /bar scroll buflist * b
+2022-11-08 18:47:01		New key binding (context "default"): meta-meta2-11~ => /bar scroll buflist * b
+2022-11-08 18:47:01		New key binding (context "default"): meta2-1;3P => /bar scroll buflist * b
+2022-11-08 18:47:01		New key binding (context "default"): meta-meta-OQ => /bar scroll buflist * e
+2022-11-08 18:47:01		New key binding (context "default"): meta-meta2-12~ => /bar scroll buflist * e
+2022-11-08 18:47:01		New key binding (context "default"): meta2-1;3Q => /bar scroll buflist * e
+2022-11-08 18:47:01		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 18:47:48		irc: server added: hehe
+2022-11-08 19:16:58		Option changed: irc.server.hehe.nicks = "user2"  (default if null: "shflte,shflte1,shflte2,shflte3,shflte4")
+2022-11-08 19:17:02	=!=	irc: already connected to server "hehe"!
+2022-11-08 19:17:20		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 19:17:28		Option changed: irc.server.hehe.nicks = "user2"  (default if null: "shflte,shflte1,shflte2,shflte3,shflte4")
+2022-11-08 19:24:55	=!=	irc: already connected to server "hehe"!
+2022-11-08 19:45:58		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 19:50:26		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 20:04:42		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 20:11:09		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 20:11:56		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 20:15:27		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-08 20:23:24		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer

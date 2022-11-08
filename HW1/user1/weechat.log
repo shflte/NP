@@ -1,0 +1,24 @@
+[2022-11-08 20:23:20] WeeChat 3.7.1 (compiled on Oct 21 2022 13:05:52)
+[2022-11-08 20:23:20] Reading configuration file sec.conf
+[2022-11-08 20:23:20] Reading configuration file weechat.conf
+[2022-11-08 20:23:20] Reading configuration file plugins.conf
+[2022-11-08 20:23:20] Reading configuration file charset.conf
+[2022-11-08 20:23:20] Reading configuration file logger.conf
+[2022-11-08 20:23:20] Reading configuration file exec.conf
+[2022-11-08 20:23:20] Reading configuration file trigger.conf
+[2022-11-08 20:23:20] Reading configuration file spell.conf
+[2022-11-08 20:23:20] Reading configuration file alias.conf
+[2022-11-08 20:23:20] Reading configuration file buflist.conf
+[2022-11-08 20:23:20] Reading configuration file fifo.conf
+[2022-11-08 20:23:20] Reading configuration file typing.conf
+[2022-11-08 20:23:20] Reading configuration file xfer.conf
+[2022-11-08 20:23:20] Reading configuration file irc.conf
+[2022-11-08 20:23:20] Reading configuration file relay.conf
+[2022-11-08 20:23:20] Reading configuration file lua.conf
+[2022-11-08 20:23:20] Reading configuration file perl.conf
+[2022-11-08 20:23:20] Reading configuration file python.conf
+[2022-11-08 20:23:20] Reading configuration file ruby.conf
+[2022-11-08 20:23:20] Reading configuration file tcl.conf
+[2022-11-08 20:23:20] Reading configuration file script.conf
+[2022-11-08 20:23:20] Reading configuration file fset.conf
+[2022-11-08 20:24:14] irc: connecting to server localhost/5678...

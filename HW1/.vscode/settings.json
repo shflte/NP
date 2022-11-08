@@ -5,6 +5,8 @@
         "in.h": "c",
         "signal.h": "c",
         "random": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "typeinfo": "c",
+        "algorithm": "c"
     }
 }
