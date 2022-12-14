@@ -44,3 +44,7 @@
 2022-11-08 20:24:24	--	No topic set for channel #hi
 2022-11-08 20:24:24	--	Channel #hi: 1 nick (0 ops, 0 voices, 1 normal)
 2022-11-08 20:24:30	user1	hi
+2022-11-10 01:31:29	--	irc: disconnected from server
+2022-11-10 12:04:02	-->	user2 () has joined #hi
+2022-11-10 12:04:02	--	No topic set for channel #hi
+2022-11-10 12:04:02	--	Channel #hi: 1 nick (0 ops, 0 voices, 1 normal)

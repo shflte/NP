@@ -10,11 +10,17 @@
 #include <netdb.h>
 
 #define MAXLINE 1000
-#define NOF 4 // number of phase
+#define NOF 1 // number of phase
+
+typedef struct give_me_chunk {
+    char legal;
+    short file;
+    short seq;
+} gmc;
 
 struct chlist_chk {
-    short list[500];
-    short which;
+    char chlist;
+    short list[1000];
 };
 
 typedef struct chunk {
@@ -67,9 +73,9 @@ int main(int argc, char **argv) {
 	struct sockaddr_in	 servaddr;
     int nof = atoi(argv[2]); // num of file
     FILE *fptr;
+    gmc* gmc_ptr;
     char filename[10], path[50];
     int filelen;
-
 	
 	// Creating socket file descriptor
 	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
@@ -88,8 +94,7 @@ int main(int argc, char **argv) {
 
 	int n;
     socklen_t len;
-	len = sizeof(servaddr); //len is value/result
-
+	len = sizeof(servaddr); // len is value/result
 
     // calculate chunk list 
     short chunk_list[1000];
@@ -113,35 +118,33 @@ int main(int argc, char **argv) {
     }
 
     // send chunklist to server
-    // struct chlist_chk first, second;
-    // first.which = 1;
-    // second.which = 2;
-    // for (int i = 0; i < 500; i++) {
-    //     first.list[i] = chunk_list[i];
-    //     second.list[i] = chunk_list[500 + i];
-    // }
-    // struct chlist_chk* first_ptr = &first;
-    // struct chlist_chk* second_ptr = &second;
-    // while (1) {
-    //     sendto(sockfd, (const char *)first_ptr, sizeof(struct chlist_chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    //     sendto(sockfd, (const char *)second_ptr, sizeof(struct chlist_chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    //     bzero(recvbuf, sizeof(recvbuf));
-    //     recvfrom(sockfd, (char *)recvbuf, MAXLINE, MSG_DONTWAIT, ( struct sockaddr *) &servaddr, &len);
-    //     if (strncmp(recvbuf, "both", 4) == 0) {
-    //         break;
-    //     }
-    // }
-
-    // initialize empty checklist
-    int* sent[1000];
+    struct chlist_chk* hahaptr = calloc(1, sizeof(struct chlist_chk));
     for (int i = 0; i < 1000; i++) {
+        hahaptr->list[i] = chunk_list[i];
+    }
+    hahaptr->chlist = 'y';
+
+    while (1) {
+        sendto(sockfd, (const char *)hahaptr, sizeof(struct chlist_chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+        bzero(recvbuf, sizeof(recvbuf));
+        recvfrom(sockfd, recvbuf, sizeof(gmc), MSG_DONTWAIT, ( struct sockaddr *) &servaddr, &len);
+        gmc_ptr = (gmc*) recvbuf;
+        if (gmc_ptr->legal == 'l') {
+            break;
+        }
+    }
+    printf("chunklist sent!\n");
+    
+    int* sent[1000];
+    for (int i = 0; i < 1000; i++) 
         sent[i] = calloc(chunk_list[i], sizeof(int));
+
+    for (int i = 0; i < 1000; i++) {
         for (int j = 0; j < chunk_list[i]; j++) {
             sent[i][j] = 0;
         }
     }
 
-    // send file!
     chk dummy;
     dummy.legal = 'l';
     chk* ch_ptr = &dummy;
@@ -149,85 +152,47 @@ int main(int argc, char **argv) {
 
     int done = 0;
     int phase = 0;
+    int haha = 0;
     int phaselen = 1000 / NOF;
-    while (phase < NOF) {
-        for (int i = phase * phaselen; i < (phase + 1) * phaselen; i++) {
-            for (int j = 0; j < chunk_list[i]; j++) {
-                if (!sent[i][j]) { // this chunk is not sent
-                    // get fullpath
-                    ntofn(filename, i);
-                    bzero(path, sizeof(path));
-                    strcpy(path, argv[1]);
-                    strcat(path, "/");
-                    strcat(path, filename);
 
-                    dummy.file = i;
-                    dummy.seq = j;
-                    if (filelen_list[i] % 1000 != 0) {
-                        if (j == (filelen_list[i] / 1000)) { // last chunk
-                            dummy.len = filelen_list[i] - 1000 * j;
-                        }
-                        else {
-                            dummy.len = 1000;
-                        }
-                    }
-                    else {
-                        dummy.len = 1000;
-                    }
+    while (1) {
+        bzero(recvbuf, sizeof(recvbuf));
+        recvfrom(sockfd, recvbuf, sizeof(recvbuf), MSG_DONTWAIT, ( struct sockaddr *) &servaddr, &len);
+        if (strncmp(recvbuf, "hehe", 4) == 0) {
+            break;
+        }
+        gmc_ptr = (gmc*) recvbuf;
+        if (gmc_ptr->legal == 'l') {
+            ntofn(filename, gmc_ptr->file);
+            bzero(path, sizeof(path));
+            strcpy(path, argv[1]);
+            strcat(path, "/");
+            strcat(path, filename);
 
-                    fptr = fopen(path, "r");
-                    fseek(fptr, j * 1000, SEEK_SET);
-                    bzero(dummy.data, sizeof(dummy.data));
-                    fread(dummy.data, sizeof(char), dummy.len, fptr);
-                    fclose(fptr);
-                    // the more packets, the more chance data is sent successfully... right?
-                    sendto(sockfd, (const char *)ch_ptr, sizeof(chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-                    sendto(sockfd, (const char *)ch_ptr, sizeof(chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-                    sendto(sockfd, (const char *)ch_ptr, sizeof(chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+            dummy.file = gmc_ptr->file;
+            dummy.seq = gmc_ptr->seq;
+            if (filelen_list[gmc_ptr->file] % 1000 != 0) {
+                if (gmc_ptr->seq == (filelen_list[gmc_ptr->file] / 1000)) { // last chunk
+                    dummy.len = filelen_list[gmc_ptr->file] - 1000 * gmc_ptr->seq;
+                }
+                else {
+                    dummy.len = 1000;
                 }
             }
-        }
-
-        // reason to call that many time "recvfrom()" is there could be many ack packets in the buffer
-        for (int i = phase * phaselen; i < (phase + 1) * phaselen; i++) {
-            for (int j = 0; j < chunk_list[i]; j++) {
-                recvfrom(sockfd, recvbuf, MAXLINE, MSG_DONTWAIT, ( struct sockaddr *) &servaddr, &len);
-                ack_ptr = (ack*) recvbuf;
-                if (ack_ptr->legal == 'l') {
-                    sent[ack_ptr->file][ack_ptr->seq] = 1;
-                }
+            else {
+                dummy.len = 1000;
             }
-        }
 
-        // check if all files are sent
-        done = 1;
-        for (int i = phase * phaselen; i < (phase + 1) * phaselen; i++) {
-            for (int j = 0; j < chunk_list[i]; j++) {
-                if (!sent[i][j]) {
-                    done = 0;
-                    break;
-                }
-            }
-            if (!done) {
-                break;
-            }
-        }
+            fptr = fopen(path, "rb");
+            fseek(fptr, gmc_ptr->seq * 1000, SEEK_SET);
+            bzero(dummy.data, sizeof(dummy.data));
+            fread(dummy.data, sizeof(char), dummy.len, fptr);
+            fclose(fptr);
+            // the more packets, the more chance data is sent successfully... right?
+            sendto(sockfd, (const char *)ch_ptr, sizeof(chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-        if (!done) {
-            continue;
         }
-
-        phase++;
     }
-
-    bzero(sendbuf, sizeof(sendbuf));
-    strcpy(sendbuf, "done");
-    // probability that all of 5 packets failed is 0.01024
-    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
     printf("client done\n");
 

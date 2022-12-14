@@ -27,3 +27,15 @@
 2022-11-08 20:11:56		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
 2022-11-08 20:15:27		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
 2022-11-08 20:23:24		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 05:59:13		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 05:59:19	=!=	Error with command "/join" (help on command: /help join)
+2022-11-17 06:42:17	=!=	irc: already connected to server "hehe"!
+2022-11-17 06:44:18		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:00:09		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:09:54		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:22:00		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:44:43		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:49:07		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:53:44		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 07:55:43		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer
+2022-11-17 10:53:58		Plugins loaded: alias, buflist, charset, exec, fifo, fset, irc, logger, lua, perl, python, relay, ruby, script, spell, tcl, trigger, typing, xfer

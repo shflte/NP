@@ -12,9 +12,15 @@
 	
 #define MAXLINE 1000
 
+typedef struct give_me_chunk {
+    char legal;
+    short file;
+    short seq;
+} gmc;
+
 struct chlist_chk {
-    short list[500];
-    short which;
+    char chlist;
+    short list[1000];
 };
 
 typedef struct chunk {
@@ -57,8 +63,8 @@ int num_of_filenum(char* str) { // parse the number from the filenum string
 
 int main(int argc, char **argv) {
 	int sockfd, fd;
-	char sendbuf[MAXLINE];
-	char recvbuf[MAXLINE];
+	char sendbuf[5000];
+	char recvbuf[5000];
 	struct sockaddr_in servaddr, cliaddr;
     int nof = atoi(argv[2]); // num of file
     FILE *fptr;
@@ -66,7 +72,6 @@ int main(int argc, char **argv) {
     int end;
     chk* ch_ptr;
     int chunk_list[1000];
-    
 
 	// Creating socket file descriptor
 	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
@@ -93,42 +98,127 @@ int main(int argc, char **argv) {
 	socklen_t len = sizeof(cliaddr); //len is value/result
     int n;
 
+    // receive chunklist
+    struct chlist_chk* hahaptr;
+    bzero(recvbuf, sizeof(recvbuf));
+    while (1) {
+        recvfrom(sockfd, recvbuf, sizeof(struct chlist_chk), MSG_DONTWAIT, ( struct sockaddr *) &cliaddr, &len); // make sure client know server know which file is gonna be send
+        hahaptr = (struct chlist_chk*) recvbuf;
+        if (hahaptr->chlist == 'y') {
+            printf("copying...\n");
+            for (int i = 0; i < 1000; i++) {
+                chunk_list[i] = hahaptr->list[i];
+            }
+            break;
+        }
+    }
+
+    chk** data = calloc(1000, sizeof(chk*));
+    for (int i = 0; i < 1000; i++) {
+        data[i] = calloc(chunk_list[i], sizeof(chk));
+        for (int j = 0; j < chunk_list[i]; j++) {
+            bzero(data[i][j].data, sizeof(data[i][j].data));
+            data[i][j].file = i;
+            data[i][j].seq = j;
+            data[i][j].len = 0;
+            data[i][j].legal = 'l';
+        }
+    }
+
+    int* sent[1000];
+    for (int i = 0; i < 1000; i++) 
+        sent[i] = calloc(chunk_list[i], sizeof(int));
+
+    for (int i = 0; i < 1000; i++) {
+        for (int j = 0; j < chunk_list[i]; j++) {
+            sent[i][j] = 0;
+        }
+    }
+    struct timeval time = {0, 10};
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO,(char*)&time,sizeof(time));
+
     // receive chunk from client
     ack dummy;
     dummy.legal = 'l';
     ack* ack_ptr = &dummy;
-    while (1) {
-        bzero(recvbuf, sizeof(recvbuf));
-        recvfrom(sockfd, recvbuf, sizeof(chk), MSG_DONTWAIT, ( struct sockaddr *) &cliaddr, &len); // make sure client know server know which file is gonna be send
-        
-        // exit if done
-        if (strncmp(recvbuf, "done", 4) == 0) {
-            printf("server got done\n");
 
-            printf("exit\n");
-            exit(0);
+    gmc* gmc_ptr = calloc(1, sizeof(gmc));
+    gmc_ptr->legal = 'l';
+    int done = 0;
+
+    while (!done) {
+        // send "give me chunk"
+        for (int i = 0; i < 1000; i++) {
+            for (int j = 0; j < chunk_list[i]; j++) {
+                if (!sent[i][j]) {
+                    gmc_ptr->file = i;
+                    gmc_ptr->seq = j;
+                    sendto(sockfd, gmc_ptr, sizeof(gmc), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+                }
+            }
         }
 
-        ch_ptr = (chk*) recvbuf;
-        if (ch_ptr->legal == 'l') {
-            // printf("file: %d; seq: %d\n", ch_ptr->file, ch_ptr->seq);
-            // write to file 
-            ntofn(filename, ch_ptr->file);
+
+        // receive chunk
+        int n;
+        bzero(recvbuf, sizeof(recvbuf));
+        while (n = recvfrom(sockfd, recvbuf, sizeof(chk), 0, ( struct sockaddr *) &cliaddr, &len)) { // make sure client know server know which file is gonna be send
+            if (n < 0) {
+                printf("break\n");
+                break;
+            }
+
+            ch_ptr = (chk*) recvbuf;
+            printf("chun`k: %d %d\n", ch_ptr->file, ch_ptr->seq);
+            if (ch_ptr->legal == 'l') {
+                printf("a\n");
+                memcpy(&data[ch_ptr->file][ch_ptr->seq], ch_ptr, sizeof(chk));
+                printf("b\n");
+                sent[ch_ptr->file][ch_ptr->seq] = 1;
+            }
+            bzero(recvbuf, sizeof(recvbuf));
+        }
+
+        done = 1;
+        for (int i = 0; i < 1000; i++) {
+            for (int j = 0; j < chunk_list[i]; j++) {
+                printf("third block i = %d; j = %d\n", i, j);
+                if (!sent[i][j]) {
+                    done = 0;
+                    break;
+                }
+            }
+            if (!done) {
+                break;
+            }
+        }
+    }
+    printf("\n\n\nserver done\n\n\n\n");
+
+    printf("write to file...\n");
+    for (int i = 0; i < 1000; i++) {
+        for (int j = 0; j < chunk_list[i]; j++) {
+            ntofn(filename, i);
             bzero(path, sizeof(path));
             strcpy(path, argv[1]);
             strcat(path, "/");
             strcat(path, filename);
-            fd = open(path, O_RDWR | O_CREAT, 0777);
-            lseek(fd, ch_ptr->seq * 1000, SEEK_SET);
-            write(fd, ch_ptr->data, ch_ptr->len);
-            close(fd);
 
-            // ack the client (no matter if server has received this chunk)
-            dummy.file = ch_ptr->file;
-            dummy.seq = ch_ptr->seq;
-            sendto(sockfd, (const char *)ack_ptr, sizeof(ack), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+            fd = open(path, O_RDWR | O_CREAT, 0777);
+            lseek(fd, j * 1000, SEEK_SET);
+            write(fd, data[i][j].data, data[i][j].len);
+            close(fd);
         }
     }
+
+    bzero(sendbuf, sizeof(sendbuf));
+    strcpy(sendbuf, "hehe");
+    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&cliaddr, sizeof(cliaddr)); // ack client that the message is received
+
 
 	return 0;
 }

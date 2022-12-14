@@ -12,8 +12,6 @@
 #include <sys/time.h>
 #include <sys/signal.h>
 
-// special thanks to Erza
-
 void handle(int signal) {
 	// printf("broken pipe;(\n");
 	return;
@@ -101,8 +99,7 @@ void motd(struct client *cli, char *buf) {
 	memset(buf, 0, sizeof(buf));
 	response(buf, "001", cli->name, ":Welcome to hehe!");
 	response(buf, "375", cli->name, ":- MOTD -");
-	response(buf, "372", cli->name, ": /   special thanks to Erza >.< \\ ");
-	response(buf, "372", cli->name, ": |   Why         so          ?  |");
+	response(buf, "372", cli->name, ": /   Why         so         ?  \\");
 	response(buf, "372", cli->name, ": \\        you        weak      / ");
 	response(buf, "372", cli->name, ": --------------------------------");
 	response(buf, "372", cli->name, ":        \\   ,__,          ");
@@ -184,7 +181,7 @@ void users(struct client *clilist, struct client *cli, char *buf) {
 	sprintf(temp, ":- %-19s %-10s %s -", "UserID", "Terminal", "Host");
 	response(buf, "392", cli->name, temp);
 	for (int i = 0; i < 1000; i++) {
-		if (cli[i].fd != -1) {
+		if (clilist[i].fd != -1) {
 			bzero(temp, sizeof(temp));
 			sprintf(temp, ":%-20s -          %s", clilist[i].name, clilist[i].ip_port);
 			response(buf, "393", cli->name, temp);
@@ -341,32 +338,6 @@ int main(int argc, char **argv) {
 				}
 			}
 			for (int i = 0; i < climax + 1; i++) {
-				// fake 
-				// chalist[50].inuse = 1;
-				// bzero(chalist[50].name, sizeof(chalist[50].name));
-				// strcpy(chalist[50].name, "faketaxi");
-				// bzero(chalist[50].topic, sizeof(chalist[50].topic));
-				// strcpy(chalist[50].topic, "haha topic");
-				// chalist[50].people = 2;
-				// chamax = 55;
-				// numcha = 1;
-
-				// clilist[50].fd = 69;
-				// bzero(clilist[50].name, sizeof(clilist[50].name));
-				// strcpy(clilist[50].name, "handsome");
-				// bzero(clilist[50].ip_port, sizeof(clilist[50].ip_port));
-				// strcpy(clilist[50].ip_port, "192.168.69.69");
-				// strcpy(clilist[50].channel, "faketaxi");
-				// clilist[44].fd = 70;
-				// bzero(clilist[44].name, sizeof(clilist[44].name));
-				// strcpy(clilist[44].name, "beauty");
-				// bzero(clilist[44].ip_port, sizeof(clilist[44].ip_port));
-				// strcpy(clilist[44].ip_port, "25.25.69.69");
-				// strcpy(clilist[44].channel, "faketaxi");
-				// climax = 55;
-				// numcli = 2;
-				// 
-
 				if ((sockfd = clilist[i].fd) < 0) {
 					continue;
 				}
@@ -394,6 +365,7 @@ int main(int argc, char **argv) {
 						char* to_parse = calloc(strlen(str_read) + 1, sizeof(char));
 						strcpy(to_parse, str_read);
 						parsed = strtok(to_parse, del);
+						de_r_n(parsed);
 
 						if (byte_read - 1 == 0) {
 							continue;
@@ -404,7 +376,6 @@ int main(int argc, char **argv) {
 						// read commands
 						if (strncmp(parsed, "NICK", 4) == 0) {
 							parsed = strtok(NULL, del);
-							de_r_n(parsed);
 							bzero(clilist[i].name, sizeof(clilist[i].name));
 							strcpy(clilist[i].name, parsed);
 							printf("changed cli %d nick\n", i);
@@ -497,7 +468,26 @@ int main(int argc, char **argv) {
 								sprintf(temp, "#%s :%s", cha, tpc);
 								response(buf, "332", clilist[i].name, temp);
 							}
-							write(sockfd, buf, strlen(buf));
+							else {
+								for (int k = 0; k < 1000; k++) {
+									if (chalist[k].inuse && strcmp(cha, chalist[k].name) == 0) {
+										char tpc_prm[100], tpccode[10];
+										bzero(tpc_prm, sizeof(tpc_prm));
+										bzero(buf, sizeof(buf));
+										if (strcmp(chalist[k].topic, "") == 0) {
+											sprintf(tpc_prm, "#%s :No topic is set", chalist[k].name);
+											strcpy(tpccode, "331");
+										}
+										else {
+											sprintf(tpc_prm, "#%s :%s", chalist[k].name, chalist[k].topic);
+											strcpy(tpccode, "332");
+										}
+										de_r_n(tpc_prm);
+										response(buf, tpccode, clilist[i].name, tpc_prm);
+										write(clilist[i].fd, buf, strlen(buf));
+									}
+								}
+							}
 						}
 						else if (strcmp(parsed, "NAMES") == 0) {
 							parsed = strtok(NULL, del); // channel name
@@ -515,9 +505,18 @@ int main(int argc, char **argv) {
 							write(sockfd, buf, strlen(buf));
 						}
 						else if (strcmp(parsed, "PART") == 0) {
+							// get channel name
+							parsed = strtok(NULL, del);
+							if (parsed != NULL) {
+								response(buf, "411", clilist[i].name, ":No recipient given (PRIVMSG)");
+							}
+							// announce user
+							bzero(buf, sizeof(buf));
+							sprintf(buf, ":%s PART :#%s\n", clilist[i].name, clilist[i].channel);
+							write(clilist[i].fd, buf, strlen(buf));
 							// find that channel
 							for (int j = 0; j < 1000; j++) {
-								if (strcmp(clilist[i].channel, chalist[j].name) == 0) {
+								if (strcmp(parsed, chalist[j].name) == 0) {
 									// people decrement
 									chalist[j].people--;
 									break;
@@ -569,12 +568,19 @@ int main(int argc, char **argv) {
 									break;
 								}
 							}
+							FD_CLR(clilist[i].fd, &allset);
+							numcli--;
+							close(clilist[i].fd);
 							// clear client's channel info
-							bzero(clilist[i].channel, sizeof(clilist[i].channel));
-							strcpy(clilist[i].channel, "");
+							initial_channel(&clilist[i]);
 						}
 						else {
-							// temporary ignored
+							char t[100];
+							bzero(t, sizeof(t));
+							sprintf(t, "%s :Unknown command", parsed);
+							bzero(buf, sizeof(buf));
+							response(buf, "421", clilist[i].name, t);
+							write(clilist[i].fd, buf, strlen(buf));
 						}
 					}
 				}
