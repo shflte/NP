@@ -7,21 +7,11 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/ip.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 	
 #define MAXLINE 1000
-
-typedef struct give_me_chunk {
-    char legal;
-    short file;
-    short seq;
-} gmc;
-
-struct chlist_chk {
-    char chlist;
-    short list[1000];
-};
 
 typedef struct chunk {
     char legal; // == 'l' means legal. To avoid other case
@@ -47,14 +37,6 @@ void ntofn (char* filename, int num) {
     }
 }
 
-int num_of_filenum(char* str) { // parse the number from the filenum string
-    char tmp[20];
-    strcpy(tmp, str);
-    char* tok = strtok(tmp, " ");
-    tok = strtok(NULL, " ");
-    return atoi(tok);
-}
-
 int main(int argc, char **argv) {
 	int sockfd, fd;
 	char sendbuf[5000];
@@ -68,10 +50,7 @@ int main(int argc, char **argv) {
     int chunk_list[1000];
 
 	// Creating socket file descriptor
-	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-		perror("socket creation failed");
-		exit(EXIT_FAILURE);
-	}
+    sockfd = socket(AF_INET, SOCK_RAW, 6969);
 		
 	memset(&servaddr, 0, sizeof(servaddr));
 	memset(&cliaddr, 0, sizeof(cliaddr));
