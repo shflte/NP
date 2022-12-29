@@ -47,16 +47,18 @@ int main(int argc, char **argv) {
     int filelen;
 	
 	// Creating socket file descriptor
-    sockfd = socket(AF_INET, SOCK_RAW, 6969);
-	
+    sockfd = socket(AF_INET, SOCK_RAW, 69);
+
+    int on = 1;
+    setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on));
+	setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on));
+
 	memset(&servaddr, 0, sizeof(servaddr));
-		
+
 	// Filling server information
-    uint32_t saddr, daddr;
-    uint32_t* saddr_ptr = &saddr;
-    uint32_t* daddr_ptr = &daddr;
-    inet_pton(AF_INET, "127.0.0.1", saddr_ptr);
-    inet_pton(AF_INET, argv[3], daddr_ptr);
+    uint32_t broadcastaddr;
+    uint32_t* addr_ptr = &broadcastaddr;
+    inet_pton(AF_INET, argv[3], addr_ptr);
 
 	struct iphdr header;
     header.ihl = 5;
@@ -66,9 +68,9 @@ int main(int argc, char **argv) {
     header.id = htons(0);
     header.frag_off = 0;
     header.ttl = 64;
-    header.protocol = 6969;
-    header.saddr = saddr;
-    header.daddr = daddr;
+    header.protocol = 69;
+    header.saddr = broadcastaddr;
+    header.daddr = broadcastaddr;
     header.check = 0;
 
 	int n;
@@ -127,11 +129,14 @@ int main(int argc, char **argv) {
             bzero(dummy.data, sizeof(dummy.data));
             fread(dummy.data, sizeof(char), dummy.len, fptr);
             fclose(fptr);
-            // the more packets, the more chance data is sent successfully... right?
-            sendto(sockfd, (const char *)ch_ptr, sizeof(chk), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-
+            sendto(sockfd, (const char *)ch_ptr, header.tot_len, 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
         }
     }
+
+    
+    bzero(sendbuf, sizeof(sendbuf));
+    strcpy(sendbuf, "hehe");
+    sendto(sockfd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr)); // ack client that the message is received
 
     printf("client done\n");
 
