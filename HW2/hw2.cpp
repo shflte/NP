@@ -25,7 +25,7 @@ using namespace std;
 typedef struct DNS_HEADER {
     uint16_t id; // identification number 
     
-    uint8_t qr : 1; // 0: query; 1: response flag
+    uint8_t qr : 1; // 0: query; 1: response 
     uint8_t opcode : 4; // purpose of message
     uint8_t aa : 1; // authoritive answer
     uint8_t tc : 1; // truncated message
@@ -35,10 +35,10 @@ typedef struct DNS_HEADER {
     uint8_t z : 3; // reserved
     uint8_t rcode : 4; // response code
 
-    uint16_t qdcount; // number of question entries
-    uint16_t ancount; // number of answer entries
-    uint16_t nscount; // number of authority entries
-    uint16_t arcount; // number of resource entries 
+    uint16_t qdcount; // number of question records
+    uint16_t ancount; // number of answer records
+    uint16_t nscount; // number of authority records
+    uint16_t arcount; // number of additional records 
 } __attribute__((packed)) dns_header;
 
 typedef struct QUESTION {
@@ -169,7 +169,7 @@ int fill_header(char* dst, char* recvbuf, int response, int qdcount, int ancount
     dns_header* dhs_ptr = (dns_header*) dst;
 
     // fill in header
-    dhs_ptr->qr = response;
+    dhs_ptr->qr = htons(response);
     dhs_ptr->ra = 1;
 
     dhs_ptr->qdcount = htons(qdcount);
@@ -218,7 +218,6 @@ int fill_soa(char* dst, char* soa_str) {
     stringstream ss(_soa_str);
     char temp[100];
     string temp_str;
-
 
     ss >> temp_str;
     bzero(mname, sizeof(mname));
@@ -371,9 +370,7 @@ int main(int argc, char **argv) {
     while (1) {
         packetlen = 0;
         bzero(recvbuf, sizeof(recvbuf));
-        cout << "hi hehe\n";
         n = recvfrom(sockfd, recvbuf, MAXLINE, 0, ( struct sockaddr *) &cliaddr, &len);
-        cout << n << endl;
         if (n < 0) {
             perror("recving dns request error: ");
         }
@@ -383,7 +380,7 @@ int main(int argc, char **argv) {
         DNSname2name(name, recvbuf + sizeof(dns_header));
 
         pair<string, vector<rr> > sr_pair;
-        rr* found_rr;
+        // rr* found_rr;
         int found = 0;
         int exist = 0;
         // go through all domains
@@ -396,16 +393,6 @@ int main(int argc, char **argv) {
             else if (subdomain(name, domain.first.c_str())) {
                 sr_pair = domain;
                 found = 1;
-                for (auto rrecord : domain.second) {
-                    char temp[100];
-                    strcpy(temp, domain.first.c_str());
-                    getrrname(rrecord.name, temp);
-                    if (strcmp(temp, name) == 0) {
-                        exist = 1;
-                        found_rr = &rrecord;
-                        break;
-                    }
-                }
                 break;
             }
         }
@@ -416,59 +403,88 @@ int main(int argc, char **argv) {
         int add_sec_offset = sizeof(dns_header) + dnamelen + sizeof(question);
         q_ptr = (question*) (recvbuf + sizeof(dns_header) + dnamelen);
         if (found == 2) { // recv domain
-            switch (ntohs(q_ptr->qtype)) {
-                case 1: // A
-                    // packet structure: header + question_sec + author_sec + addition_sec
-                    // fill header & ques
-                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, 0, 1, 1);
-                    cout << "len: " << packetlen << endl;
-                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
-                    cout << "len: " << packetlen << endl;
-
-                    // fill SOA
-                    for (auto record : sr_pair.second) {
-                        if (record.rtype == htons(6)) { // SOA
-                            char name_temp[100], dname_temp[100];
-                            bzero(name_temp, sizeof(name_temp));
-                            bzero(dname_temp, sizeof(dname_temp));
-                            strcpy(name_temp, name);
-                            getrrname(record.name, name_temp);
-                            name2DNSname(dname_temp, name_temp);
-
-                            char soa_temp[100];
-                            uint16_t soa_len = fill_soa(soa_temp, record.rdata);
-                            soa_len = htons(soa_len);
-                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &soa_len, soa_temp);
-                            cout << "len: " << packetlen << endl;
-                            break;
-                        }
-                    }
-
-                    // additional section
-                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
-                    packetlen += n - add_sec_offset;
-                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
-                    break;
-                case 28: // AAAA
-                    break;
-                case 2: // NS
-                    break;
-                case 5: // CNAME
-                    break;
-                case 6: // SOA
-                    break;
-                case 15: // MX
-                    break;
-                case 16: // TXT
-                    break;
-                default:
-                    break;
+            vector<rr> records;
+            // go through the entire zone file, retrieve all entries with same type
+            for (auto record : sr_pair.second) {
+                if (strncmp(record.name, "@", 1) == 0 && record.rtype == ntohs(q_ptr->qtype)) {
+                    records.push_back(record);
+                }
             }
+
+            if (records.size() > 0) { // found some entries
+                if ((ntohs(q_ptr->qtype) == 1)
+                    || (ntohs(q_ptr->qtype) == 28)
+                    || (ntohs(q_ptr->qtype) == 5)
+                    || (ntohs(q_ptr->qtype) == 15)
+                    || (ntohs(q_ptr->qtype) == 16)) {
+                    // 應該沒有1, 28(A, AAAA), 但還是handle一下
+                }
+                else if (ntohs(q_ptr->qtype) == 2) { // NS
+
+                }
+                else { // SOA
+
+                }
+            }
+            else { // not found
+                // packet structure: header + question_sec + author_sec + addition_sec
+                // fill header & ques
+                packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, 0, 1, 1);
+                packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+
+                // fill SOA
+                for (auto record : sr_pair.second) {
+                    if (record.rtype == htons(6)) { // SOA
+                        char name_temp[100], dname_temp[100];
+                        bzero(name_temp, sizeof(name_temp));
+                        bzero(dname_temp, sizeof(dname_temp));
+                        strcpy(name_temp, name);
+                        getrrname(record.name, name_temp);
+                        name2DNSname(dname_temp, name_temp);
+
+                        char soa_temp[100];
+                        uint16_t soa_len = fill_soa(soa_temp, record.rdata);
+                        soa_len = htons(soa_len);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &soa_len, soa_temp);
+                        break;
+                    }
+                }
+
+                // additional section
+                memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                packetlen += n - add_sec_offset;
+                sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+            }
+
         }
         else if (found == 1) {
-            if (exist) {
+            // go through the entire zone file, retrieve all matches
+            vector<rr> records;
+            for (auto record : sr_pair.second) {
+                if (record.rtype == ntohs(q_ptr->qtype)) { // of same type
+                    char temp[100];
+                    strcpy(temp, sr_pair.first.c_str());
+                    getrrname(record.name, temp);
+                    if (strcmp(temp, name) == 0) { // of same name
+                        records.push_back(record);
+                    }
+                    records.push_back(record);
+                }
+            }
+
+            if (records.size() > 0) {
+                // 基本上只會是A跟AAAA
+                // packet structure: header + question_sec + author_sec + addition_sec
                 switch (ntohs(q_ptr->qtype)) {
-                    case 1: // A
+                    case 1: { // A 
+                        // packet structure: header + question_sec + author_sec + addition_sec
+
+                        break;
+                    }
+                    case 28: { // AAAA
+                        break;
+                    }
+                    default: {
                         // packet structure: header + question_sec + author_sec + addition_sec
                         // fill header & ques
                         packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, 0, 1, 1);
@@ -497,20 +513,7 @@ int main(int argc, char **argv) {
                         packetlen += n - add_sec_offset;
                         sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
                         break;
-                    case 28: // AAAA
-                        break;
-                    case 2: // NS
-                        break;
-                    case 5: // CNAME
-                        break;
-                    case 6: // SOA
-                        break;
-                    case 15: // MX
-                        break;
-                    case 16: // TXT
-                        break;
-                    default:
-                        break;
+                    }
                 }
             }
             else { // not exist
@@ -544,14 +547,12 @@ int main(int argc, char **argv) {
             }
         }
         else if (!found) { // domain not found in 
+            cout << "this case\n";
             // send query to foreign dns server
             memcpy(sendbuf, recvbuf, MAXLINE);
             dh_ptr = (dns_header*)sendbuf;
             dh_ptr->ra = 1;
-            dh_ptr->qr = 0;
-            cout << "sending...\n";
             sendto(forsockfd, sendbuf, n, 0, (struct sockaddr *)&fns_addr, len);
-            cout << "sent!\n";
 
             // recv foreign dns server's response
             bzero(recvbuf, sizeof(recvbuf));
