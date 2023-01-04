@@ -208,6 +208,18 @@ int fill_rr(char* dst, char* name, u_int16_t* rtype, u_int16_t* rclass, unsigned
     return namelen + sizeof(question) + sizeof(unsigned int) + sizeof(uint16_t) + ntohs(*rdlen);
 }
 
+int fill_ns(char* dst, char* ns_str) {
+    char temp[100];
+    bzero(temp, sizeof(temp));
+    strcpy(temp, ns_str);
+    char dnsname[100];
+    bzero(dnsname, sizeof(dnsname));
+    name2DNSname(dnsname, temp);
+    int len = DNSnamelen(dnsname);
+    memcpy(dst, dnsname, len);
+    return len;
+}
+
 int fill_soa(char* dst, char* soa_str) {
     char mname[50], rname[50];
     uint32_t serial, refresh, retry, expire, minimum;
@@ -461,60 +473,71 @@ int main(int argc, char **argv) {
             // go through the entire zone file, retrieve all matches
             vector<rr> records;
             for (auto record : sr_pair.second) {
-                if (record.rtype == ntohs(q_ptr->qtype)) { // of same type
+                if (ntohs(record.rtype) == ntohs(q_ptr->qtype)) { // of same type
                     char temp[100];
                     strcpy(temp, sr_pair.first.c_str());
                     getrrname(record.name, temp);
                     if (strcmp(temp, name) == 0) { // of same name
                         records.push_back(record);
                     }
-                    records.push_back(record);
                 }
             }
 
             if (records.size() > 0) {
                 // 基本上只會是A跟AAAA
-                // packet structure: header + question_sec + author_sec + addition_sec
-                switch (ntohs(q_ptr->qtype)) {
-                    case 1: { // A 
-                        // packet structure: header + question_sec + author_sec + addition_sec
+                // packet structure: header + question_sec + ans_sec * N + author_sec(NS) + addition_sec(抄來的)
+                // fill header & ques
+                packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
+                cout << "hea len: " << packetlen << endl;
+                packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
 
-                        break;
+                cout << "que len: " << packetlen << endl;
+                // fill answer
+                for (int k = 0; k < records.size(); k++) {
+                    if (q_ptr->qtype == htons(1)) { // A
+                        cout << "A record\n";
+                        char name_temp[100], dname_temp[100];
+                        strcpy(name_temp, name);
+                        name2DNSname(dname_temp, name_temp);
+                        uint16_t A_addr_len = htons(4);
+                        uint32_t A_addr;
+                        A_addr = inet_addr(records[k].rdata);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &A_addr_len, &A_addr);
                     }
-                    case 28: { // AAAA
-                        break;
+                    else if (q_ptr->qtype == htons(28)) { // AAAA
+                        cout << "AAAA record\n";
+                        char name_temp[100], dname_temp[100];
+                        strcpy(name_temp, name);
+                        name2DNSname(dname_temp, name_temp);
+                        uint16_t AAAA_addr_len = htons(16);
+                        char AAAA_addr[16];
+                        inet_pton(AF_INET6, records[k].rdata, AAAA_addr);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &AAAA_addr_len, AAAA_addr);
                     }
-                    default: {
-                        // packet structure: header + question_sec + author_sec + addition_sec
-                        // fill header & ques
-                        packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, 0, 1, 1);
-                        packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                }
+                cout << "ans len: " << packetlen << endl;
 
-                        // fill SOA
-                        for (auto record : sr_pair.second) {
-                            if (record.rtype == htons(6)) { // SOA
-                                char name_temp[100], dname_temp[100];
-                                bzero(name_temp, sizeof(name_temp));
-                                bzero(dname_temp, sizeof(dname_temp));
-                                strcpy(name_temp, name);
-                                getrrname(record.name, name_temp);
-                                name2DNSname(dname_temp, name_temp);
+                // fill author (NS)
+                for (auto record : sr_pair.second) {
+                    if (record.rtype == htons(2)) { // NS
+                        char name_temp[100], dname_temp[100];
+                        strcpy(name_temp, sr_pair.first.c_str());
+                        name2DNSname(dname_temp, name_temp);
 
-                                char soa_temp[100];
-                                uint16_t soa_len = fill_soa(soa_temp, record.rdata);
-                                soa_len = htons(soa_len);
-                                packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &soa_len, soa_temp);
-                                break;
-                            }
-                        }
-
-                        // additional section
-                        memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
-                        packetlen += n - add_sec_offset;
-                        sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+                        char ns_temp[100];
+                        uint16_t ns_len = fill_ns(ns_temp, record.rdata);
+                        ns_len = htons(ns_len);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
                         break;
                     }
                 }
+                cout << "auth len: " << packetlen << endl;
+
+                // additional section
+                memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                packetlen += n - add_sec_offset;
+                cout << "addi len: " << packetlen << endl;
+                sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
             }
             else { // not exist
                 // packet structure: header + question_sec + author_sec + addition_sec
@@ -563,30 +586,6 @@ int main(int argc, char **argv) {
 
             exit(0);
         }
-
-        // dh_ptr = (dns_header*) recvbuf;
-        // dnamelen = DNSnamelen(recvbuf + sizeof(dns_header));
-        
-        
-
-        // bzero(sendbuf, sizeof(sendbuf));
-        // packetlen += fill_header(sendbuf, recvbuf, 1, 1, 1, 0, 0);
-
-        
-        // packetlen += fill_ques(sendbuf + sizeof(header), recvbuf + sizeof(header), (question*) (recvbuf + sizeof(header) + dnamelen));
-
-        // char* answer_ptr = sendbuf + sizeof(dns_header) + dnamelen + sizeof(question);
-        // u_int32_t ttl = htonl(1023);
-        // u_int16_t rdlen = htons(4);
-        // u_int32_t ipip;
-        // unsigned char* haha = (unsigned char*) &ipip;
-        // haha[0] = 98;
-        // haha[1] = 137;
-        // haha[2] = 11;
-        // haha[3] = 164;
-        // packetlen += fill_rr(answer_ptr, recvbuf + sizeof(dns_header), q_ptr, &ttl, &rdlen, haha);
-
-        // sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
     }
 
     return 0; 
