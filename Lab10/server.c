@@ -50,7 +50,8 @@ int main(int argc, char **argv) {
     int chunk_list[1000];
 
 	// Creating socket file descriptor
-    sockfd = socket(AF_INET, SOCK_RAW, 69);
+    sockfd = socket(AF_INET, SOCK_RAW, 161);
+    
     int on = 1;
 	setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &on, sizeof(on));
 		
@@ -62,8 +63,8 @@ int main(int argc, char **argv) {
     int n;
     bzero(recvbuf, sizeof(recvbuf));
     while (n = recvfrom(sockfd, recvbuf, sizeof(chk) + 20, 0, ( struct sockaddr *) &cliaddr, &len)) { // make sure client know server know which file is gonna be send
-        if (n > 0) {
-            printf("recv sth.\n");
+        if (strncmp(recvbuf + 20, "hehe", 4) == 0) {
+            break;
         }
         ch_ptr = (chk*) (recvbuf + 20);
         if (ch_ptr->legal == 'l') {
@@ -81,6 +82,7 @@ int main(int argc, char **argv) {
         }
         bzero(recvbuf, sizeof(recvbuf));
     }
+    printf("srerver done\n");
 
 	return 0;
 }
