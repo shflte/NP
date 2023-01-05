@@ -771,56 +771,96 @@ int main(int argc, char **argv) {
 
             if (records.size() > 0) {
                 // 基本上只會是A跟AAAA
-                // packet structure: header + question_sec + ans_sec * N + author_sec(NS) + addition_sec(抄來的)
-                // fill header & ques
-                packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
-                packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                if (ntohs(q_ptr->qtype) == 1 || ntohs(q_ptr->qtype) == 28) {
+                    // packet structure: header + question_sec + ans_sec * N + author_sec(NS) + addition_sec(抄來的)
+                    // fill header & ques
+                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
+                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
 
-                // fill answer
-                for (int k = 0; k < records.size(); k++) {
-                    if (q_ptr->qtype == htons(1)) { // A
-                        char name_temp[100], dname_temp[100];
-                        strcpy(name_temp, name);
-                        name2DNSname(dname_temp, name_temp);
-                        uint16_t A_addr_len = htons(4);
-                        uint32_t A_addr;
-                        A_addr = inet_addr(records[k].rdata);
-                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &A_addr_len, &A_addr);
+                    // fill answer
+                    for (int k = 0; k < records.size(); k++) {
+                        if (q_ptr->qtype == htons(1)) { // A
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, name);
+                            name2DNSname(dname_temp, name_temp);
+                            uint16_t A_addr_len = htons(4);
+                            uint32_t A_addr;
+                            A_addr = inet_addr(records[k].rdata);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &A_addr_len, &A_addr);
+                        }
+                        else if (q_ptr->qtype == htons(28)) { // AAAA
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, name);
+                            name2DNSname(dname_temp, name_temp);
+                            uint16_t AAAA_addr_len = htons(16);
+                            char AAAA_addr[16];
+                            records[k].rdata[strlen(records[k].rdata) - 1] = '\0';
+                            int a = inet_pton(AF_INET6, records[k].rdata, AAAA_addr);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &AAAA_addr_len, AAAA_addr);
+                        }
                     }
-                    else if (q_ptr->qtype == htons(28)) { // AAAA
-                        char name_temp[100], dname_temp[100];
-                        strcpy(name_temp, name);
-                        name2DNSname(dname_temp, name_temp);
-                        uint16_t AAAA_addr_len = htons(16);
-                        char AAAA_addr[16];
-                        records[k].rdata[strlen(records[k].rdata) - 1] = '\0';
-                        int a = inet_pton(AF_INET6, records[k].rdata, AAAA_addr);
-                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &AAAA_addr_len, AAAA_addr);
+
+                    // fill author (NS)
+                    for (auto record : sr_pair.second) {
+                        if (record.rtype == htons(2)) { // NS
+                            authcount++;
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
+
+                            char ns_temp[100];
+                            uint16_t ns_len = fill_name(ns_temp, record.rdata);
+                            ns_len = htons(ns_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                        }
                     }
+
+                    // additional section
+                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                    packetlen += n - add_sec_offset;
+
+                    fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 1);
+
+                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
                 }
-
-                // fill author (NS)
-                for (auto record : sr_pair.second) {
-                    if (record.rtype == htons(2)) { // NS
-                        authcount++;
+                else if (ntohs(q_ptr->qtype) == 5) {
+                    // packet structure: header + question_sec + author_sec (ns) + addition_sec (抄來的)
+                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
+                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                    
+                    // answer section
+                    for (int k = 0; k < records.size(); k++) {
                         char name_temp[100], dname_temp[100];
                         strcpy(name_temp, sr_pair.first.c_str());
                         name2DNSname(dname_temp, name_temp);
 
-                        char ns_temp[100];
-                        uint16_t ns_len = fill_name(ns_temp, record.rdata);
-                        ns_len = htons(ns_len);
-                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                        char cname_temp[100];
+                        uint16_t cname_len = fill_name(cname_temp, records[k].rdata);
+                        cname_len = htons(cname_len);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &cname_len, cname_temp);
                     }
+                    // authority section (NS)
+                    for (auto record : sr_pair.second) {
+                        if (record.rtype == htons(2)) { // NS
+                            authcount++;
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
+
+                            char ns_temp[100];
+                            uint16_t ns_len = fill_name(ns_temp, record.rdata);
+                            ns_len = htons(ns_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                        }
+                    }
+                    fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 1);
+
+                    // additional section
+                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                    packetlen += n - add_sec_offset;
+
+                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
                 }
-
-                // additional section
-                memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
-                packetlen += n - add_sec_offset;
-
-                fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 1);
-
-                sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
             }
             else { // not exist
                 // packet structure: header + question_sec + author_sec + addition_sec
