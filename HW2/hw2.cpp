@@ -18,6 +18,7 @@
 #include <fstream>
 #include <utility>
 #include <sstream>
+#include <regex>
 
 using namespace std;
 #define MAXLINE 1000
@@ -160,6 +161,38 @@ void getrrname(char* prefix, char* name) {
         strcat(name, ".");
         strcat(name, temp);
     }
+}
+
+bool is_number(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool canparse(char* str, char* buf) {
+    char temp[100];
+    
+    strcpy(temp, str);
+    // 點點變不見
+    for (int i = 0; i < strlen(temp); i++) {
+        if (temp[i] == '.') {
+            temp[i] = ' ';
+        }
+    }
+    string haha = string(temp);
+    stringstream ss(haha);
+    string hoho;
+
+    for (int i = 0; i < 4; i++) {
+        ss >> hoho;
+        if (!is_number(hoho)) {
+            buf = NULL;
+            return false;
+        }
+        buf[i] = stoi(hoho);
+    }
+    return true;
 }
 
 // response=0 for query; response=1 for response
@@ -320,6 +353,7 @@ int main(int argc, char **argv) {
     FILE *              fptr;
     fstream             fs, fsz;
     string              str;
+    int authcount = 0;
 
     // read file
     fs.open(argv[2], std::fstream::in);
@@ -436,6 +470,7 @@ int main(int argc, char **argv) {
         dnamelen = DNSnamelen(recvbuf + sizeof(dns_header));
         int add_sec_offset = sizeof(dns_header) + dnamelen + sizeof(question);
         q_ptr = (question*) (recvbuf + sizeof(dns_header) + dnamelen);
+        authcount = 0;
         if (found == 2) { // recv domain
             vector<rr> records;
             // go through the entire zone file, retrieve all entries with same type
@@ -476,10 +511,10 @@ int main(int argc, char **argv) {
                             packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &rdata_len, txttosend);
                         }
                     }
-
                     // authority section (NS)
                     for (auto record : sr_pair.second) {
                         if (record.rtype == htons(2)) { // NS
+                            authcount++;
                             char name_temp[100], dname_temp[100];
                             strcpy(name_temp, sr_pair.first.c_str());
                             name2DNSname(dname_temp, name_temp);
@@ -488,9 +523,9 @@ int main(int argc, char **argv) {
                             uint16_t ns_len = fill_name(ns_temp, record.rdata);
                             ns_len = htons(ns_len);
                             packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
-                            break;
                         }
                     }
+                    fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 1);
 
                     // additional section
                     memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
@@ -518,6 +553,7 @@ int main(int argc, char **argv) {
                     // authority section (NS)
                     for (auto record : sr_pair.second) {
                         if (record.rtype == htons(2)) { // NS
+                            authcount++;
                             char name_temp[100], dname_temp[100];
                             strcpy(name_temp, sr_pair.first.c_str());
                             name2DNSname(dname_temp, name_temp);
@@ -526,7 +562,6 @@ int main(int argc, char **argv) {
                             uint16_t ns_len = fill_name(ns_temp, record.rdata);
                             ns_len = htons(ns_len);
                             packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
-                            break;
                         }
                     }
 
@@ -550,6 +585,7 @@ int main(int argc, char **argv) {
                             break;
                         }
                     }
+                    fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 2);
 
                     memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
                     packetlen += n - add_sec_offset;
@@ -600,7 +636,7 @@ int main(int argc, char **argv) {
                     sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
                 }
                 else if (ntohs(q_ptr->qtype) == 6) { // SOA
-                    // packet structure: header + question_sec + author_sec (ns) + addition_sec (抄來的)
+                    // packet structure: header + question_sec + answer + author_sec (ns) + addition_sec (抄來的)
                     packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
                     packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
                     
@@ -625,6 +661,7 @@ int main(int argc, char **argv) {
                     // author section (NS)
                     for (auto record : sr_pair.second) {
                         if (record.rtype == htons(2)) { // NS
+                            authcount++;
                             char name_temp[100], dname_temp[100];
                             strcpy(name_temp, sr_pair.first.c_str());
                             name2DNSname(dname_temp, name_temp);
@@ -633,12 +670,13 @@ int main(int argc, char **argv) {
                             uint16_t ns_len = fill_name(ns_temp, record.rdata);
                             ns_len = htons(ns_len);
                             packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
-                            break;
                         }
                     }
 
                     memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
                     packetlen += n - add_sec_offset;
+
+                    fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 1);
                     
                     sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
                 }
@@ -678,6 +716,46 @@ int main(int argc, char **argv) {
 
         }
         else if (found == 1) {
+            // nip.io like service
+
+            uint32_t nipioaddr;
+            if (canparse(name, (char*)&nipioaddr)) {
+                // fill header & ques
+                packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, 1, 1, 1);
+                packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+
+                // fill answer
+                char name_temp[100], dname_temp[100];
+                strcpy(name_temp, name);
+                name2DNSname(dname_temp, name_temp);
+                uint16_t A_addr_len = htons(4);
+                uint16_t dummyoneone = htons(1);
+                uint32_t dummyoneoneoneone = htonl(1);
+                packetlen += fill_rr(sendbuf + packetlen, dname_temp, &dummyoneone, &dummyoneone, &dummyoneoneoneone, &A_addr_len, &nipioaddr);
+
+                // fill author (NS)
+                for (auto record : sr_pair.second) {
+                    if (record.rtype == htons(2)) { // NS
+                        authcount++;
+                        char name_temp[100], dname_temp[100];
+                        strcpy(name_temp, sr_pair.first.c_str());
+                        name2DNSname(dname_temp, name_temp);
+
+                        char ns_temp[100];
+                        uint16_t ns_len = fill_name(ns_temp, record.rdata);
+                        ns_len = htons(ns_len);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                    }
+                }
+
+                // additional section
+                memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                packetlen += n - add_sec_offset;
+
+                fill_header(sendbuf, recvbuf, 1, 1, 1, authcount, 1);
+
+                sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+            }
             // go through the entire zone file, retrieve all matches
             vector<rr> records;
             for (auto record : sr_pair.second) {
@@ -714,14 +792,9 @@ int main(int argc, char **argv) {
                         strcpy(name_temp, name);
                         name2DNSname(dname_temp, name_temp);
                         uint16_t AAAA_addr_len = htons(16);
-                        // sockaddr_in6 ipv6addr;
-                        // memset(&ipv6addr, 0, sizeof(sockaddr_in6));
-                        // inet_pton(AF_INET6, records[k].rdata, &ipv6addr);
                         char AAAA_addr[16];
-                        // memcpy(AAAA_addr, &(ipv6addr.sin6_addr), 16);
-                        for (int y = 0; y < 16; y++) {
-                            AAAA_addr[y] = y;
-                        }
+                        records[k].rdata[strlen(records[k].rdata) - 1] = '\0';
+                        int a = inet_pton(AF_INET6, records[k].rdata, AAAA_addr);
                         packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &AAAA_addr_len, AAAA_addr);
                     }
                 }
@@ -729,6 +802,7 @@ int main(int argc, char **argv) {
                 // fill author (NS)
                 for (auto record : sr_pair.second) {
                     if (record.rtype == htons(2)) { // NS
+                        authcount++;
                         char name_temp[100], dname_temp[100];
                         strcpy(name_temp, sr_pair.first.c_str());
                         name2DNSname(dname_temp, name_temp);
@@ -737,13 +811,15 @@ int main(int argc, char **argv) {
                         uint16_t ns_len = fill_name(ns_temp, record.rdata);
                         ns_len = htons(ns_len);
                         packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
-                        break;
                     }
                 }
 
                 // additional section
                 memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
                 packetlen += n - add_sec_offset;
+
+                fill_header(sendbuf, recvbuf, 1, 1, records.size(), authcount, 1);
+
                 sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
             }
             else { // not exist
