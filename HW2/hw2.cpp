@@ -163,7 +163,7 @@ void getrrname(char* prefix, char* name) {
 }
 
 // response=0 for query; response=1 for response
-// all ints should be in network byte order
+// all ints should be in host byte order
 int fill_header(char* dst, char* recvbuf, int response, int qdcount, int ancount, int nscount, int arcount) {
     memcpy(dst, recvbuf, sizeof(dns_header));
     dns_header* dhs_ptr = (dns_header*) dst;
@@ -208,7 +208,7 @@ int fill_rr(char* dst, char* name, u_int16_t* rtype, u_int16_t* rclass, unsigned
     return namelen + sizeof(question) + sizeof(unsigned int) + sizeof(uint16_t) + ntohs(*rdlen);
 }
 
-int fill_ns(char* dst, char* ns_str) {
+int fill_name(char* dst, char* ns_str) {
     char temp[100];
     bzero(temp, sizeof(temp));
     strcpy(temp, ns_str);
@@ -218,6 +218,28 @@ int fill_ns(char* dst, char* ns_str) {
     int len = DNSnamelen(dnsname);
     memcpy(dst, dnsname, len);
     return len;
+}
+
+int fill_mx(char* dst, char* mx_str) {
+    char temp[100];
+    strcpy(temp, mx_str);
+    string str = string(temp);
+    stringstream ss(str);
+    string num_str;
+    uint16_t num;
+    ss >> num_str;
+    num = htons(stoi(num_str));
+    memcpy(dst, &num, sizeof(uint16_t));
+    string tempstr;
+    ss >> tempstr;
+    char dnsname[100], name[100];
+    strcpy(name, tempstr.c_str());
+    bzero(dnsname, sizeof(dnsname));
+    name2DNSname(dnsname, name);
+    int namelen = DNSnamelen(dnsname);
+    memcpy(dst + sizeof(uint16_t), dnsname, namelen);
+
+    return namelen + sizeof(uint16_t);
 }
 
 int fill_soa(char* dst, char* soa_str) {
@@ -418,24 +440,210 @@ int main(int argc, char **argv) {
             vector<rr> records;
             // go through the entire zone file, retrieve all entries with same type
             for (auto record : sr_pair.second) {
-                if (strncmp(record.name, "@", 1) == 0 && record.rtype == ntohs(q_ptr->qtype)) {
+                if (strncmp(record.name, "@", 1) == 0 && record.rtype == q_ptr->qtype) {
                     records.push_back(record);
                 }
             }
 
             if (records.size() > 0) { // found some entries
-                if ((ntohs(q_ptr->qtype) == 1)
-                    || (ntohs(q_ptr->qtype) == 28)
-                    || (ntohs(q_ptr->qtype) == 5)
-                    || (ntohs(q_ptr->qtype) == 15)
-                    || (ntohs(q_ptr->qtype) == 16)) {
-                    // 應該沒有1, 28(A, AAAA), 但還是handle一下
-                }
-                else if (ntohs(q_ptr->qtype) == 2) { // NS
+                if ((ntohs(q_ptr->qtype) == 5) // CNAME
+                    || (ntohs(q_ptr->qtype) == 16)) { // TXT
+                    // packet structure: header + question_sec + author_sec (ns) + addition_sec (抄來的)
+                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
+                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                    
+                    // answer section
+                    for (int k = 0; k < records.size(); k++) {
+                        if (ntohs(q_ptr->qtype) == 5) { // CNAME
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
 
-                }
-                else { // SOA
+                            char cname_temp[100];
+                            uint16_t cname_len = fill_name(cname_temp, records[k].rdata);
+                            cname_len = htons(cname_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &cname_len, cname_temp);
+                        }
+                        else if (ntohs(q_ptr->qtype) == 16) { // TXT
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
+                            records[k].rdata[strlen(records[k].rdata) - 1] = '\0';
+                            uint16_t rdata_len = htons(strlen(records[k].rdata) + 1);
+                            char txttosend[100];
+                            strcpy(txttosend + 1, records[k].rdata);
+                            txttosend[0] = strlen(records[k].rdata);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &rdata_len, txttosend);
+                        }
+                    }
 
+                    // authority section (NS)
+                    for (auto record : sr_pair.second) {
+                        if (record.rtype == htons(2)) { // NS
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
+
+                            char ns_temp[100];
+                            uint16_t ns_len = fill_name(ns_temp, record.rdata);
+                            ns_len = htons(ns_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                            break;
+                        }
+                    }
+
+                    // additional section
+                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                    packetlen += n - add_sec_offset;
+
+                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+                }
+                else if (ntohs(q_ptr->qtype) == 15) { // MX: 1112
+                    // packet structure: header + question_sec + author_sec (ns) + addition_sec * 2 (subdomain: ip + 抄來的)
+                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 2);
+                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                    
+                    // answer section
+                    for (int k = 0; k < records.size(); k++) {
+                        char name_temp[100], dname_temp[100];
+                        strcpy(name_temp, sr_pair.first.c_str());
+                        name2DNSname(dname_temp, name_temp);
+
+                        char mx_temp[100];
+                        uint16_t mx_len = fill_mx(mx_temp, records[k].rdata);
+                        mx_len = htons(mx_len);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &mx_len, mx_temp);
+                    }
+
+                    // authority section (NS)
+                    for (auto record : sr_pair.second) {
+                        if (record.rtype == htons(2)) { // NS
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
+
+                            char ns_temp[100];
+                            uint16_t ns_len = fill_name(ns_temp, record.rdata);
+                            ns_len = htons(ns_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                            break;
+                        }
+                    }
+
+                    // additional section
+                    for (auto record : sr_pair.second) {
+                        if (strncmp(record.name, "mail", 4) == 0) {
+                            // get mail.{domain}
+                            char temp[100];
+                            strcpy(temp, sr_pair.first.c_str());
+                            getrrname(record.name, temp);
+
+                            // mail.{domain} -> 4mail...0
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, temp);
+                            name2DNSname(dname_temp, name_temp);
+
+                            uint16_t A_addr_len = htons(4);
+                            uint32_t A_addr;
+                            A_addr = inet_addr(record.rdata);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &A_addr_len, &A_addr);
+                            break;
+                        }
+                    }
+
+                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                    packetlen += n - add_sec_offset;
+                    
+                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+                }
+                else if (ntohs(q_ptr->qtype) == 2) { // NS: 1102
+                    // packet structure: header + question_sec + addition_sec * 2 (subdomain: ip + 抄來的)
+                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 0, 2);
+                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                    
+                    // answer section
+                    for (int k = 0; k < records.size(); k++) {
+                        char name_temp[100], dname_temp[100];
+                        strcpy(name_temp, sr_pair.first.c_str());
+                        name2DNSname(dname_temp, name_temp);
+
+                        char ns_temp[100];
+                        uint16_t ns_len = fill_name(ns_temp, records[k].rdata);
+                        ns_len = htons(ns_len);
+                        packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &ns_len, ns_temp);
+                    }
+
+                    // additional section
+                    for (auto record : sr_pair.second) {
+                        if (strncmp(record.name, "dns", 3) == 0) {
+                            // get mail.{domain}
+                            char temp[100];
+                            strcpy(temp, sr_pair.first.c_str());
+                            getrrname(record.name, temp);
+
+                            // mail.{domain} -> 4mail...0
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, temp);
+                            name2DNSname(dname_temp, name_temp);
+
+                            uint16_t A_addr_len = htons(4);
+                            uint32_t A_addr;
+                            A_addr = inet_addr(record.rdata);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &A_addr_len, &A_addr);
+                            break;
+                        }
+                    }
+
+                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                    packetlen += n - add_sec_offset;
+                    
+                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+                }
+                else if (ntohs(q_ptr->qtype) == 6) { // SOA
+                    // packet structure: header + question_sec + author_sec (ns) + addition_sec (抄來的)
+                    packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
+                    packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
+                    
+                    // answer section (SOA)
+                    for (auto record : sr_pair.second) {
+                        if (record.rtype == htons(6)) { // SOA
+                            char name_temp[100], dname_temp[100];
+                            bzero(name_temp, sizeof(name_temp));
+                            bzero(dname_temp, sizeof(dname_temp));
+                            strcpy(name_temp, name);
+                            getrrname(record.name, name_temp);
+                            name2DNSname(dname_temp, name_temp);
+
+                            char soa_temp[100];
+                            uint16_t soa_len = fill_soa(soa_temp, record.rdata);
+                            soa_len = htons(soa_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &soa_len, soa_temp);
+                            break;
+                        }
+                    }
+
+                    // author section (NS)
+                    for (auto record : sr_pair.second) {
+                        if (record.rtype == htons(2)) { // NS
+                            char name_temp[100], dname_temp[100];
+                            strcpy(name_temp, sr_pair.first.c_str());
+                            name2DNSname(dname_temp, name_temp);
+
+                            char ns_temp[100];
+                            uint16_t ns_len = fill_name(ns_temp, record.rdata);
+                            ns_len = htons(ns_len);
+                            packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
+                            break;
+                        }
+                    }
+
+                    memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
+                    packetlen += n - add_sec_offset;
+                    
+                    sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
+                }
+                else { // A/AAAA丟水溝
+                    cout << "hehe not implemented haha";
                 }
             }
             else { // not found
@@ -488,14 +696,11 @@ int main(int argc, char **argv) {
                 // packet structure: header + question_sec + ans_sec * N + author_sec(NS) + addition_sec(抄來的)
                 // fill header & ques
                 packetlen += fill_header(sendbuf + packetlen, recvbuf, 1, 1, records.size(), 1, 1);
-                cout << "hea len: " << packetlen << endl;
                 packetlen += fill_ques(sendbuf + packetlen, recvbuf + packetlen, (question*) (recvbuf + packetlen + dnamelen));
 
-                cout << "que len: " << packetlen << endl;
                 // fill answer
                 for (int k = 0; k < records.size(); k++) {
                     if (q_ptr->qtype == htons(1)) { // A
-                        cout << "A record\n";
                         char name_temp[100], dname_temp[100];
                         strcpy(name_temp, name);
                         name2DNSname(dname_temp, name_temp);
@@ -505,17 +710,21 @@ int main(int argc, char **argv) {
                         packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &A_addr_len, &A_addr);
                     }
                     else if (q_ptr->qtype == htons(28)) { // AAAA
-                        cout << "AAAA record\n";
                         char name_temp[100], dname_temp[100];
                         strcpy(name_temp, name);
                         name2DNSname(dname_temp, name_temp);
                         uint16_t AAAA_addr_len = htons(16);
+                        // sockaddr_in6 ipv6addr;
+                        // memset(&ipv6addr, 0, sizeof(sockaddr_in6));
+                        // inet_pton(AF_INET6, records[k].rdata, &ipv6addr);
                         char AAAA_addr[16];
-                        inet_pton(AF_INET6, records[k].rdata, AAAA_addr);
+                        // memcpy(AAAA_addr, &(ipv6addr.sin6_addr), 16);
+                        for (int y = 0; y < 16; y++) {
+                            AAAA_addr[y] = y;
+                        }
                         packetlen += fill_rr(sendbuf + packetlen, dname_temp, &records[k].rtype, &records[k].rclass, &records[k].ttl, &AAAA_addr_len, AAAA_addr);
                     }
                 }
-                cout << "ans len: " << packetlen << endl;
 
                 // fill author (NS)
                 for (auto record : sr_pair.second) {
@@ -525,18 +734,16 @@ int main(int argc, char **argv) {
                         name2DNSname(dname_temp, name_temp);
 
                         char ns_temp[100];
-                        uint16_t ns_len = fill_ns(ns_temp, record.rdata);
+                        uint16_t ns_len = fill_name(ns_temp, record.rdata);
                         ns_len = htons(ns_len);
                         packetlen += fill_rr(sendbuf + packetlen, dname_temp, &record.rtype, &record.rclass, &record.ttl, &ns_len, ns_temp);
                         break;
                     }
                 }
-                cout << "auth len: " << packetlen << endl;
 
                 // additional section
                 memcpy(sendbuf + packetlen, recvbuf + add_sec_offset, n - add_sec_offset);
                 packetlen += n - add_sec_offset;
-                cout << "addi len: " << packetlen << endl;
                 sendto(sockfd, sendbuf, packetlen, 0, (struct sockaddr *)&cliaddr, len);
             }
             else { // not exist
@@ -570,7 +777,6 @@ int main(int argc, char **argv) {
             }
         }
         else if (!found) { // domain not found in 
-            cout << "this case\n";
             // send query to foreign dns server
             memcpy(sendbuf, recvbuf, MAXLINE);
             dh_ptr = (dns_header*)sendbuf;
@@ -583,8 +789,6 @@ int main(int argc, char **argv) {
 
             // send back to client
             sendto(sockfd, recvbuf, n, 0, (struct sockaddr *)&cliaddr, len);
-
-            exit(0);
         }
     }
 
